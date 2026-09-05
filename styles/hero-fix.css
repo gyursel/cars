@@ -7,6 +7,27 @@
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
+  position: relative !important;
+  isolation: isolate;
+}
+
+.lot-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgba(255,255,255,.14);
+  mix-blend-mode: screen;
+}
+
+.lot-hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+.lot-hero [data-pmselect-admin-logo='true'] {
+  z-index: 7 !important;
 }
 
 @media (max-width: 600px) {
