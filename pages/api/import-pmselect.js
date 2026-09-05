@@ -226,9 +226,11 @@ export default async function handler(req, res) {
     const hrefs = uniq(
       [...overview.matchAll(/href=["']([^"']*\/obiava-[^"']+)["']/gi)]
         .map(m => new URL(decodeHtml(m[1]), BASE).href)
-    ).slice(0, 30);
+    ).slice(0, 80);
 
     if (!hrefs.length) throw new Error('Не бяха открити обяви в PM Select.');
+
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
     const cars = [];
     for (const url of hrefs) {
@@ -239,6 +241,7 @@ export default async function handler(req, res) {
       } catch (e) {
         console.error('Import detail failed:', url, e);
       }
+      await sleep(200);
     }
 
     if (!cars.length) throw new Error('Не беше прочетена нито една обява.');
