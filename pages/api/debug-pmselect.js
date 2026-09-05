@@ -55,6 +55,10 @@ export default async function handler(req, res) {
     const idx = text.search(/Дата на производство/i);
     const around = idx >= 0 ? text.slice(idx, idx + 1200) : '(не е намерен маркерът "Дата на производство" в декодирания текст)';
 
+    // Суровият HTML около същия маркер, за да видим реалната markup структура.
+    const rawIdx = html.search(/Дата на производство/i);
+    const rawAround = rawIdx >= 0 ? html.slice(Math.max(0, rawIdx - 200), rawIdx + 2500) : '(маркерът не е намерен в суровия HTML)';
+
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       detectedEncoding: encoding,
@@ -63,6 +67,7 @@ export default async function handler(req, res) {
       textLength: text.length,
       containsCyrillicLabel: idx >= 0,
       sampleAroundLabel: around,
+      rawHtmlAroundLabel: rawAround,
       first500: text.slice(0, 500)
     });
   } catch (e) {
