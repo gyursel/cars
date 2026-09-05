@@ -4,30 +4,17 @@
   aspect-ratio: 1096 / 442 !important;
   padding: 0 !important;
   background-image: url('/pm-select-hero.png') !important;
-  background-size: cover !important;
+  background-size: contain !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
+  background-color: #080a0c !important;
   position: relative !important;
-  isolation: isolate;
 }
 
+.lot-hero::before,
 .lot-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: rgba(255,255,255,.14);
-  mix-blend-mode: screen;
-}
-
-.lot-hero > * {
-  position: relative;
-  z-index: 2;
-}
-
-.lot-hero [data-pmselect-admin-logo='true'] {
-  z-index: 7 !important;
+  display: none !important;
+  content: none !important;
 }
 
 @media (max-width: 600px) {
@@ -36,8 +23,7 @@
     height: auto !important;
     aspect-ratio: 1096 / 442 !important;
     padding: 0 !important;
-    background-image: url('/pm-select-hero.png') !important;
-    background-size: cover !important;
+    background-size: contain !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
   }
@@ -49,8 +35,7 @@
     height: auto !important;
     aspect-ratio: 1096 / 442 !important;
     padding: 0 !important;
-    background-image: url('/pm-select-hero.png') !important;
-    background-size: cover !important;
+    background-size: contain !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
   }
