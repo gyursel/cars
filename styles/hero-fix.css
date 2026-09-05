@@ -1,9 +1,21 @@
+.lot-hero {
+  min-height: 0 !important;
+  height: auto !important;
+  aspect-ratio: 1096 / 442 !important;
+  padding: 0 !important;
+  background-image: url('/pm-select-hero.png') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
 @media (max-width: 600px) {
   .lot-hero {
     min-height: 0 !important;
     height: auto !important;
-    aspect-ratio: 1916 / 768 !important;
+    aspect-ratio: 1096 / 442 !important;
     padding: 0 !important;
+    background-image: url('/pm-select-hero.png') !important;
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
@@ -14,8 +26,9 @@
   .lot-hero {
     min-height: 0 !important;
     height: auto !important;
-    aspect-ratio: 1916 / 768 !important;
+    aspect-ratio: 1096 / 442 !important;
     padding: 0 !important;
+    background-image: url('/pm-select-hero.png') !important;
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
