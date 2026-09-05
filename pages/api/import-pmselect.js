@@ -142,7 +142,12 @@ function extractDetail(html, sourceUrl) {
 
   let title = '';
   const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i)?.[1];
-  if (ogTitle) title = decodeHtml(ogTitle).replace(/\s*[-|].*Mobile\.bg.*$/i, '').trim();
+  if (ogTitle) {
+    title = decodeHtml(ogTitle)
+      .replace(/\s*[-|].*Mobile\.bg.*$/i, '')
+      .replace(/\s*[|:]?\s*(?:№|No\.?)?\s*\d{10,}\s*$/i, '')
+      .trim();
+  }
   if (!title) {
     const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1];
     title = h1 ? plainText(h1) : '';
@@ -216,7 +221,21 @@ async function fetchHtml(url) {
     redirect: 'follow'
   });
   if (!r.ok) throw new Error(`HTTP ${r.status} при ${url}`);
-  return r.text();
+
+  // response.text() винаги декодира като UTF-8, независимо от реалния charset.
+  // pmselect.mobile.bg сервира windows-1251, затова четем суровите байтове
+  // и декодираме с реално декларирания charset (от header или <meta>).
+  const buf = Buffer.from(await r.arrayBuffer());
+  const headerCharset = r.headers.get('content-type')?.match(/charset=([\w-]+)/i)?.[1];
+  const metaCharset = buf.toString('latin1').match(/<meta[^>]+charset=["']?\s*([\w-]+)/i)?.[1];
+  let encoding = (headerCharset || metaCharset || 'utf-8').toLowerCase();
+  if (encoding === 'windows1251') encoding = 'windows-1251';
+
+  try {
+    return new TextDecoder(encoding).decode(buf);
+  } catch {
+    return buf.toString('utf-8');
+  }
 }
 
 export default async function handler(req, res) {
