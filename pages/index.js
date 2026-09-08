@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 
 async function uploadImage(file) {
   const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-  const path = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
+  const path = `${Date.now()}_${Math.random).toString(36).slice(2, 8)}_${safeName}`;
 
   const { error } = await supabase.storage.from('vehicles').upload(path, file, {
     cacheControl: '3600',
