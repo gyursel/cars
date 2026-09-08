@@ -10,6 +10,9 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+    // Vercel image optimizer връщаше 400 за Supabase снимките.
+    // Изключваме оптимизацията - next/image пак дава lazy-loading
+    // и без layout shift, само компресията отпада засега.
     unoptimized: true,
   },
 };

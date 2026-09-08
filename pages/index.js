@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useId } from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc, collection, getDocs, addDoc, increment } from 'firebase/firestore';
 import { supabase } from '../lib/supabase';
@@ -154,7 +153,7 @@ function ImageUploader({ value, onChange, allowVideo = false }) {
           {valueIsVideo ? (
             <video src={value} muted playsInline style={{ width: 90, height: 65, objectFit: 'cover', borderRadius: 6, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
           ) : (
-            <Image src={value} alt="" width={90} height={65} style={{ objectFit: 'cover', borderRadius: 6, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
+            <img src={value} alt="" style={{ width: 90, height: 65, objectFit: 'cover', borderRadius: 6, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
           )}
           <button onClick={() => inputRef.current.click()} style={{ position: 'absolute', bottom: 3, right: 3, background: 'rgba(10,12,16,0.85)', border: 'none', color: '#E8B830', fontSize: 10, padding: '2px 6px', borderRadius: 4, cursor: 'pointer' }}>
             Смени
@@ -239,8 +238,8 @@ function FullGalleryUploader({ value = [], onChange }) {
       {(value || []).length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 10 }}>
           {(value || []).map((url, i) => (
-            <div key={url + i} style={{ position: 'relative', height: 90 }}>
-              <Image src={url} alt={`Снимка ${i + 1}`} fill sizes="(max-width: 600px) 25vw, 150px" style={{ objectFit: 'cover', borderRadius: 8, border: '0.5px solid rgba(140,150,160,0.35)' }} />
+            <div key={url + i} style={{ position: 'relative' }}>
+              <img src={url} alt={`Снимка ${i + 1}`} style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 8, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
               <div style={{ position: 'absolute', left: 5, bottom: 5, background: 'rgba(10,12,16,0.8)', color: '#E8B830', fontSize: 10, padding: '2px 6px', borderRadius: 10 }}>
                 #{i + 1}
               </div>
@@ -322,8 +321,8 @@ function CarGalleryUploader({ value = [], onChange }) {
       {images.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))', gap: 8, marginTop: 9 }}>
           {images.map((url, i) => (
-            <div key={url + i} style={{ position: 'relative', minWidth: 0, height: 78 }}>
-              <Image src={url} alt={`Автомобил ${i + 1}`} fill sizes="(max-width: 600px) 25vw, 120px" style={{ objectFit: 'cover', borderRadius: 7, border: i === 0 ? '2px solid #C9A227' : '0.5px solid rgba(140,150,160,0.35)' }} />
+            <div key={url + i} style={{ position: 'relative', minWidth: 0 }}>
+              <img src={url} alt={`Автомобил ${i + 1}`} style={{ width: '100%', height: 78, objectFit: 'cover', borderRadius: 7, border: i === 0 ? '2px solid #C9A227' : '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
               <button onClick={() => removeImage(i)} title="Изтрий снимката" style={{ position: 'absolute', top: 3, right: 3, width: 19, height: 19, borderRadius: '50%', border: 'none', background: 'rgba(200,60,60,.94)', color: '#fff', cursor: 'pointer', lineHeight: '19px', padding: 0 }}>×</button>
               <button onClick={() => makeCover(i)} disabled={i === 0} style={{ position: 'absolute', left: 3, bottom: 3, border: 'none', borderRadius: 5, padding: '2px 5px', fontSize: 9, cursor: i === 0 ? 'default' : 'pointer', background: i === 0 ? '#C9A227' : 'rgba(10,12,16,.82)', color: i === 0 ? '#12151A' : '#E8B830' }}>
                 {i === 0 ? 'Основна' : 'Направи основна'}
@@ -345,7 +344,7 @@ function CarCard({ c, dark, badgeColors, index, onOpen }) {
   ].filter(([,v])=>v);
   return <article className="lux-car" onClick={onOpen} role="button" tabIndex={0} onKeyDown={e=>(e.key==='Enter'||e.key===' ')&&onOpen?.()} style={{opacity:visible?1:0,transform:visible?'none':'translateY(18px)'}}>
     <div className="lux-photo-wrap">
-      {(c.image||c.images?.[0]) ? <Image className="lux-photo" src={c.image||c.images?.[0]} alt={c.name} fill sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, (max-width: 1180px) 33vw, 25vw" style={{objectFit:'cover'}}/> : <div className="lux-photo lux-placeholder">PM SELECT</div>}
+      {(c.image||c.images?.[0]) ? <img className="lux-photo" src={c.image||c.images?.[0]} alt={c.name}/> : <div className="lux-photo lux-placeholder">PM SELECT</div>}
       {c.badges?.[0] && <span className="lux-tag">{BADGE_LABELS[c.badges[0]]||c.badges[0]}</span>}
       <span className="lux-heart">♡</span>
     </div>
@@ -401,7 +400,7 @@ function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) 
           {filtered.map(c => (
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '0.5px solid rgba(140,150,160,0.18)' }}>
               {c.image ? (
-                <Image src={c.image} alt="" width={46} height={46} style={{ borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                <img src={c.image} alt="" style={{ width: 46, height: 46, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
               ) : (
                 <div style={{ width: 46, height: 46, borderRadius: 8, background: '#e6e8eb', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🚗</div>
               )}
@@ -509,7 +508,11 @@ export default function Home() {
   const [galleryPage, setGalleryPage] = useState(0);
   const [selectedCar, setSelectedCar] = useState(null);
   const [carPhotoPage, setCarPhotoPage] = useState(0);
-  const [loggingIn, setLoggingIn] = useState(false);
+  const [currentPass, setCurrentPass] = useState(process.env.NEXT_PUBLIC_ADMIN_PASS || '1234');
+  const [newPass1, setNewPass1] = useState('');
+  const [newPass2, setNewPass2] = useState('');
+  const [passSaving, setPassSaving] = useState(false);
+  const [passMsg, setPassMsg] = useState('');
   const [pmImporting, setPmImporting] = useState(false);
   const [pmImportMsg, setPmImportMsg] = useState('');
   const badgeColors = getBadgeColors(dark);
@@ -550,6 +553,19 @@ export default function Home() {
     }
 
     loadLot();
+
+    async function loadPassword() {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'admin'));
+        if (snap.exists() && snap.data().password) {
+          setCurrentPass(snap.data().password);
+        }
+      } catch (e) {
+        console.error('Грешка при зареждане на паролата:', e);
+      }
+    }
+
+    loadPassword();
   }, []);
 
   useEffect(() => {
@@ -631,37 +647,44 @@ export default function Home() {
     setTimeout(() => setToast(''), 2500);
   }
 
-  async function doLogin() {
-    if (!password || loggingIn) return;
-    setLoggingIn(true);
-    setLoginError(false);
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setPassword('');
-        setAdminLot(JSON.parse(JSON.stringify(lot)));
-        setScreen('admin');
-      } else {
-        setLoginError(true);
-      }
-    } catch (e) {
+  function doLogin() {
+    if (password === currentPass) {
+      setAdminLot(JSON.parse(JSON.stringify(lot)));
+      setScreen('admin');
+      setLoginError(false);
+    } else {
       setLoginError(true);
     }
-    setLoggingIn(false);
   }
 
-  async function doLogout() {
-    try {
-      await fetch('/api/logout', { method: 'POST' });
-    } catch (e) {
-      // няма проблем ако заявката не мине - бисквитката така или иначе изтича
+  async function changePassword() {
+    setPassMsg('');
+
+    if (!newPass1 || newPass1.length < 4) {
+      setPassMsg('Паролата трябва да е поне 4 символа.');
+      return;
     }
-    setScreen('lot');
+
+    if (newPass1 !== newPass2) {
+      setPassMsg('Паролите не съвпадат.');
+      return;
+    }
+
+    setPassSaving(true);
+
+    try {
+      await setDoc(doc(db, 'settings', 'admin'), { password: newPass1 }, { merge: true });
+      setCurrentPass(newPass1);
+      setNewPass1('');
+      setNewPass2('');
+      setPassMsg('Паролата е сменена успешно.');
+      showToast('Паролата е сменена ✓');
+    } catch (e) {
+      console.error('Грешка при смяна на паролата:', e);
+      setPassMsg('Грешка при запис. Опитай отново.');
+    }
+
+    setPassSaving(false);
   }
 
   async function importPmSelect() {
@@ -1044,8 +1067,7 @@ export default function Home() {
               {total > 0 ? (
                 <>
                   <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', background: '#090b0e', border: '1px solid rgba(201,162,39,.3)' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photos[current]} alt={`${selectedCar.name} - снимка ${current + 1}`} loading="eager" decoding="async" style={{ width: '100%', maxHeight: 520, objectFit: 'contain', display: 'block', background: '#090b0e' }} />
+                    <img src={photos[current]} alt={`${selectedCar.name} - снимка ${current + 1}`} style={{ width: '100%', maxHeight: 520, objectFit: 'contain', display: 'block', background: '#090b0e' }} />
                     {total > 1 && <>
                       <button onClick={() => goTo(current - 1)} aria-label="Предишна снимка" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(232,184,48,.42)', background: 'rgba(6,7,10,.65)', color: '#E8B830', fontSize: 24, cursor: 'pointer' }}>‹</button>
                       <button onClick={() => goTo(current + 1)} aria-label="Следваща снимка" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(232,184,48,.42)', background: 'rgba(6,7,10,.65)', color: '#E8B830', fontSize: 24, cursor: 'pointer' }}>›</button>
@@ -1056,8 +1078,8 @@ export default function Home() {
                   {total > 1 && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(74px, 1fr))', gap: 7, marginTop: 8 }}>
                       {photos.map((url, i) => (
-                        <button key={url + i} onClick={() => setCarPhotoPage(i)} style={{ position: 'relative', height: 64, border: i === current ? '2px solid #C9A227' : `1px solid ${border}`, borderRadius: 8, overflow: 'hidden', padding: 0, background: '#111', cursor: 'pointer' }}>
-                          <Image src={url} alt={`Миниатюра ${i + 1}`} fill sizes="100px" style={{ objectFit: 'cover' }} />
+                        <button key={url + i} onClick={() => setCarPhotoPage(i)} style={{ border: i === current ? '2px solid #C9A227' : `1px solid ${border}`, borderRadius: 8, overflow: 'hidden', padding: 0, background: '#111', cursor: 'pointer' }}>
+                          <img src={url} alt={`Миниатюра ${i + 1}`} style={{ width: '100%', height: 64, objectFit: 'cover', display: 'block' }} />
                         </button>
                       ))}
                     </div>
@@ -1172,8 +1194,7 @@ export default function Home() {
                   animation: 'fadeUp 0.35s ease both'
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={pages[galleryPage]} alt={`Снимка ${galleryPage + 1}`} loading="lazy" decoding="async" style={{ width: '100%', display: 'block' }} />
+                <img src={pages[galleryPage]} alt={`Снимка ${galleryPage + 1}`} style={{ width: '100%', display: 'block' }} />
               </div>
 
               {total > 1 && (
@@ -1225,8 +1246,8 @@ export default function Home() {
             style={{ width: '100%', maxWidth: 320, padding: '10px 14px', border: `0.5px solid ${border}`, borderRadius: 8, fontSize: 14, marginBottom: 10, outline: 'none', background: cardBg, color: textMain }}
           />
 
-          <button onClick={doLogin} disabled={loggingIn} style={{ width: '100%', maxWidth: 320, padding: 11, background: '#12151A', color: '#E8B830', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: loggingIn ? 'default' : 'pointer', opacity: loggingIn ? 0.6 : 1 }}>
-            {loggingIn ? 'Проверка...' : 'Влез'}
+          <button onClick={doLogin} style={{ width: '100%', maxWidth: 320, padding: 11, background: '#12151A', color: '#E8B830', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            Влез
           </button>
 
           {loginError && <div style={{ color: '#E24B4A', fontSize: 12, marginTop: 8 }}>Грешна парола</div>}
@@ -1240,7 +1261,7 @@ export default function Home() {
       {screen === 'admin' && adminLot && (
         <div style={{ background: '#F5F6F7', minHeight: '100vh' }}>
           <div style={{ background: '#12151A', color: '#E8B830', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button onClick={doLogout} style={{ background: 'none', border: '0.5px solid rgba(232,184,48,0.35)', color: 'rgba(232,184,48,0.85)', padding: '5px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}>
+            <button onClick={() => setScreen('lot')} style={{ background: 'none', border: '0.5px solid rgba(232,184,48,0.35)', color: 'rgba(232,184,48,0.85)', padding: '5px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}>
               ← Автомобили
             </button>
             <span style={{ fontSize: 15, fontWeight: 600 }}>Управление на автокъщата</span>
@@ -1320,12 +1341,39 @@ export default function Home() {
             </div>
 
             <div style={{ marginBottom: '1.5rem', background: 'white', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 10, padding: '0.9rem 1rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9A227', marginBottom: 8 }}>
-                Парола за админ
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9A227', marginBottom: 10 }}>
+                Смяна на парола за админ
               </div>
-              <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>
-                Паролата се сменя от Vercel → Project Settings → Environment Variables → <code>ADMIN_PASSWORD</code>, след което се прави redeploy.
-              </div>
+
+              <input
+                type="password"
+                value={newPass1}
+                onChange={e => setNewPass1(e.target.value)}
+                placeholder="Нова парола"
+                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: '#F9FAFA', outline: 'none', marginBottom: 8 }}
+              />
+
+              <input
+                type="password"
+                value={newPass2}
+                onChange={e => setNewPass2(e.target.value)}
+                placeholder="Потвърди новата парола"
+                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: '#F9FAFA', outline: 'none', marginBottom: 8 }}
+              />
+
+              {passMsg && (
+                <div style={{ fontSize: 12, color: passMsg.includes('успешно') ? '#2e7d32' : '#c0392b', marginBottom: 8 }}>
+                  {passMsg}
+                </div>
+              )}
+
+              <button
+                onClick={changePassword}
+                disabled={passSaving}
+                style={{ background: '#12151A', color: '#E8B830', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, cursor: 'pointer', opacity: passSaving ? 0.6 : 1 }}
+              >
+                {passSaving ? 'Запис...' : 'Смени паролата'}
+              </button>
             </div>
 
             {adminLot.sections.map((sec, si) => (
