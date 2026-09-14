@@ -11,15 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase REST API
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "apikey: sb_publishable_3dYmhynyHyBzagLFRmR0GQ_QnQ49FiO" \
-            "https://wyzlvhjdghoiqrymkues.supabase.co/rest/v1/")
-          echo "Supabase REST responded with HTTP $STATUS"
+        run: curl -s -o /dev/null -w "Supabase REST responded with HTTP %{http_code}\n" -H "apikey: sb_publishable_3dYmhynyHyBzagLFRmR0GQ_QnQ49FiO" "https://wyzlvhjdghoiqrymkues.supabase.co/rest/v1/"
 
       - name: Ping Supabase Storage (vehicles bucket)
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://wyzlvhjdghoiqrymkues.supabase.co/storage/v1/object/public/vehicles/")
-          echo "Supabase Storage responded with HTTP $STATUS"
-
+        run: curl -s -o /dev/null -w "Supabase Storage responded with HTTP %{http_code}\n" "https://wyzlvhjdghoiqrymkues.supabase.co/storage/v1/object/public/vehicles/"
