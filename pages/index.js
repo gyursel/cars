@@ -1023,6 +1023,7 @@ export default function Home() {
                 <ImageUploader value={adminLot.heroImage || ''} onChange={url => setAdminLot({ ...adminLot, heroImage: url })} allowVideo />
               </div>
 
+              <div className="admin-branding"><h2>Начален екран</h2><p>Вертикална фотография за началния екран. При празно поле се използва тъмният автомобил от избрания визуален пример.</p><ImageUploader value={adminLot.introImage || ''} onChange={url => setAdminLot({ ...adminLot, introImage: url })}/></div>
               <div className="admin-branding"><h2>Лого и наследен банер</h2><p>Фонът по-горе има приоритет. Ако е празен, използваме съществуващия банер от настройките, а след него — снимка от селекцията.</p><ImageUploader value={adminLot.logoImage ?? branding.logoImage ?? ''} onChange={url => setAdminLot({ ...adminLot, logoImage: url })}/></div>
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 11, color: '#a51c2b', marginBottom: 6 }}>ГАЛЕРИЯ НА АВТОКЪЩАТА — ДО 30 СНИМКИ</div>

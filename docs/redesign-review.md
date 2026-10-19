@@ -43,3 +43,12 @@ No policies, secrets, passwords or live records were changed as part of this bra
 Review at 375, 390, 430, 768 and desktop widths. Confirm no overflow; keyboard focus, tabs and Escape lightbox behavior; filter/sort results; card → details → back; image fallback/error handling; actual Cyrillic fonts; and reduced motion. In staging verify login, create/edit/delete, cover/reorder, visibility, preview, upload failures, save failures, password change and logout. Verify reload persistence and that denied anonymous backend writes really fail.
 
 Run `npm ci`, `npm run build`, `npm start`. Admin entry: `/#admin` or the administration link. Use a Vercel preview for review. Production remains unchanged until separately reviewed and approved.
+
+
+## Visual revision after user review
+
+The first editorial layout was rejected by the user. The revised design follows the supplied Emergent example (https://car-showcase-200.emergent.host/): a photographic intro screen, a compact app header, selected vehicle with oversized model lettering, two-column image-overlay cards at phone widths, saved favorites, expandable search/filter controls and a floating navigation dock. The detail page is now stacked with compact serif titles and red tabs. Desktop retains a centered 480px app canvas, matching the shared example.
+
+The introductory marketing photo uses the same Unsplash image observed in the user's example: https://images.unsplash.com/photo-1769641240978-fff8b96d3b42 . It is stored locally as an optimized WebP and is separate from real inventory; no listing prices, ratings or specifications were copied from the reference site. Admin can replace it through the new intro-image control. Existing vehicle records remain the source for catalog and detail screens.
+
+The visual revision passed the production build and diff whitespace check. Preview/browser findings are recorded in the review handoff.
