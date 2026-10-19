@@ -105,4 +105,4 @@ User signs in to the branch Preview locally, then inspect admin tabs/editor read
 - Start the spotlight and first two card images eagerly even behind the intro, at low priority; intro hero retains high priority. On entry, spotlight becomes high priority and first cards auto. Remaining cards stay lazy/low to avoid downloading the whole catalog at once.
 - This changes request scheduling only, no source URLs, image contents, database or admin changes. External image response time/failures remain dependent on the source.
 - npm test PASS (6); npm run build PASS; git diff --check PASS.
-- Next: confirm new Preview's hidden critical images load before pressing Explore; no numerical cold-cache speed claim until measured.
+- Verified new Ready Preview in connected Chrome before pressing Explore: spotlight and first two cards are eager/low and complete with decoded dimensions 1600x1200, 1600x1628, 1600x1200; subsequent images remain lazy and unloaded. Browser cache was not cleared, so no numerical cold-cache speed claim is made.
