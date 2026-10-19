@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 
 // Temporary fixture route imports real UI components, never Firebase or Supabase.
 // Every browser request outside localhost is blocked, including analytics writes.
@@ -25,7 +26,8 @@ try {
     try { if ((await fetch('http://127.0.0.1:3100/__qa')).ok) break; } catch {}
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-  browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+  const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
+  browser = await chromium.launch({ ...(executablePath ? { executablePath } : {}), args: ['--no-sandbox'] });
   const errors = [];
   const adminWrites = [];
   const page = await browser.newPage();
@@ -52,37 +54,44 @@ try {
     await page.getByRole('button', { name: 'Разгледай →', exact: true }).click();
     const nav = page.getByRole('navigation', { name: 'Мобилна навигация' });
     await nav.waitFor();
-    // Consecutive programmatic click events avoid Playwright's animation wait.
+    await page.locator('.pmselect-transition-veil').waitFor({ state: 'detached' });
+    // Burst on real controls: each navigation tap is immediate; hit targets never move.
     const samples = await page.evaluate(async () => {
       const buttons = [...document.querySelectorAll('.apex-bottom-nav button')];
       const samples = [];
+      const originalBoxes = buttons.map(button => button.getBoundingClientRect().toJSON());
       for (const index of [1, 2, 3, 0, 3, 1, 2, 1, 0]) {
         const start = performance.now(); buttons[index].click();
         await new Promise(requestAnimationFrame);
         const active = buttons.filter(button => button.classList.contains('is-active'));
-        samples.push({ count: active.length, selected: buttons.indexOf(active[0]), expected: index, ms: performance.now() - start });
+        samples.push({ count: active.length, selected: buttons.indexOf(active[0]), expected: index, stationary: buttons.every((button, n) => { const rect = button.getBoundingClientRect(); return Math.abs(rect.x-originalBoxes[n].x)<1 && Math.abs(rect.width-originalBoxes[n].width)<1; }), ms: performance.now() - start });
       }
       return samples;
     });
-    samples.forEach(sample => { assert.equal(sample.count, 1); assert.equal(sample.selected, sample.expected); });
+    samples.forEach(sample => { assert.equal(sample.count, 1); assert.equal(sample.selected, sample.expected); assert.equal(sample.stationary, true, 'tab hit boxes must not move'); });
     assert.equal(await nav.locator('[aria-current="page"]').count(), 1);
     await page.waitForTimeout(650);
+    assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Начало');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `overflow at ${width}`);
     await nav.getByRole('button', { name: 'Контакти', exact: true }).click();
     await page.waitForTimeout(900);
     assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Контакти');
     await page.mouse.wheel(0, -10000);
     await page.waitForTimeout(900);
-    assert.equal(await nav.locator('.is-active').innerText(), 'Начало');
+    assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Контакти', 'contact is a screen, not a scroll-spy section');
+    await nav.getByRole('button', { name: 'Начало', exact: true }).click();
+    await page.waitForTimeout(550);
+    const navRect = await nav.boundingBox();
+    assert.ok(navRect.y >= 0 && navRect.y + navRect.height <= 900, 'navigation stays in viewport');
     await page.locator('#inventory').scrollIntoViewIfNeeded();
     const title = page.locator('.apex-car h3').first();
     const dimensions = await title.evaluate(element => ({ height: element.clientHeight, line: parseFloat(getComputedStyle(element).lineHeight), name: element.textContent, title: element.title }));
     assert.ok(dimensions.height <= dimensions.line * 2 + 1);
-    assert.equal(dimensions.name, dimensions.title);
+    assert.ok(dimensions.title.includes(dimensions.name), 'full imported title remains available');
     await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo({ top: 0, behavior: 'instant' }); });
     await page.waitForTimeout(100);
     await page.screenshot({ path: path.join(output, `showroom-${width}.png`), fullPage: true });
-    console.log(`PASS ${width}px: navigation, rapid taps, scroll sync, title clamp, overflow; max sampled response ${Math.max(...samples.map(s => s.ms)).toFixed(1)}ms`);
+    console.log(`PASS ${width}px: navigation, rapid taps, screen persistence, fixed nav, title clamp, overflow; max sampled response ${Math.max(...samples.map(s => s.ms)).toFixed(1)}ms`);
   }
   await page.getByRole('button', { name: 'Меню', exact: true }).click();
   await page.getByRole('navigation', { name: 'Меню', exact: true }).getByRole('button', { name: 'Услуги' }).click();
@@ -111,6 +120,16 @@ try {
   await page.getByRole('button', { name: '← Към колекцията', exact: true }).click();
   await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Търсене и филтри' }).click();
   await page.getByRole('textbox', { name: 'Търси марка или модел' }).fill('няма такъв автомобил');
+  await page.getByRole('heading', { name: 'Няма съвпадения' }).waitFor();
+  // A saved car remains reachable even while search has no matches.
+  await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Начало', exact: true }).click();
+  await page.locator('.apex-car .save-car').first().click();
+  await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Любими автомобили' }).click();
+  await page.getByRole('heading', { name: 'Любими', exact: true }).waitFor();
+  assert.equal(await page.locator('.apex-car').count(), 1);
+  await page.locator('.apex-car .save-car').click();
+  assert.equal(await page.locator('.apex-car').count(), 0);
+  await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Търсене и филтри' }).click();
   await page.getByRole('heading', { name: 'Няма съвпадения' }).waitFor();
   // Exercise the real Home source with only service imports replaced by mocks.
   await page.goto('http://127.0.0.1:3100/__qa-home');
