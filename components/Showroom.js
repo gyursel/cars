@@ -8,7 +8,7 @@ export const numeric = value => Number(String(value ?? '').replace(/[^\d.,]/g, '
 export const priceOf = value => value !== '' && value != null && Number.isFinite(numeric(value)) && numeric(value) > 0 ? `${numeric(value).toLocaleString('bg-BG')} €` : 'Цена при запитване';
 const badges = { new: 'Ново постъпление', leasing: 'Лизинг / Бартер', warranty: 'Гаранция', '4x4': '4 × 4' };
 
-export function Mark({ logo }) { if (logo) return <img className="apex-logo-image" src={logo} alt={BRAND} decoding="async"/>; return <span className="apex-mark">PMSELECT<span>CARS</span></span>; }
+export function Mark({ logo = "/pmselect-logo.png" }) { return <img className="apex-logo-image" src={logo} alt="PM Select Automotive" decoding="async"/>; }
 function Icon({ name }) {
   const paths = { home: 'M3 11 12 3l9 8M5 10v11h5v-7h4v7h5V10', inventory: 'M3 17V9l3-5h12l3 5v8M3 10h18M6 14h2m8 0h2M5 17v3m14-3v3', contact: 'M5 3h4l2 5-3 2a16 16 0 0 0 6 6l2-3 5 2v4c-9 3-21-9-16-16Z', services: 'M12 3 3 8l9 13 9-13-9-5ZM3 8h18M8 8l4 13 4-13' };
   return <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.inventory}/></svg>;
@@ -47,7 +47,8 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   const featured = cars.find(c => c.featured && imagesOf(c).length) || cars.find(c => imagesOf(c).length);
   const hero = lot.introImage || '/apex-hero.webp';
   
-  const logo = lot.logoImage ?? branding?.logoImage;
+  // Use the approved PM Select artwork, not the legacy Firestore logo URL.
+  const logo = '/pmselect-logo.png';
   const video = hero && /\.(mp4|webm|mov)(\?|$)/i.test(hero);
   const navigate = key => { setMenuOpen(false); selectNavigation(key); };
   const reset = () => { setQuery(''); setCategory('all'); setFuel(''); setGearbox(''); setMaxPrice(''); setMinYear(''); setMaxMileage(''); if (onlySaved) selectNavigation('home'); };
