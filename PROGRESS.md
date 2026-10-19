@@ -99,3 +99,10 @@ Restore authorized Preview access for the connected Vercel account/team, then ve
 
 ## Next concrete step (latest)
 User signs in to the branch Preview locally, then inspect admin tabs/editor read-only without changing or saving data. Check transition timing/reduced-motion behaviour with sequential evidence before declaring exact animation parity. Keep PR #8 draft until final review; public navigation/filter/gallery checks above are verified, not blocked.
+
+## Initial image loading — 2026-10-19 15:55 Sofia
+- User reported delayed/refreshing photos on first visit. Observed real Preview while intro was visible: spotlight and first cards had loading=lazy, fetchPriority=low, complete=false, natural dimensions 0x0; their requests had not started behind the hidden collection.
+- Start the spotlight and first two card images eagerly even behind the intro, at low priority; intro hero retains high priority. On entry, spotlight becomes high priority and first cards auto. Remaining cards stay lazy/low to avoid downloading the whole catalog at once.
+- This changes request scheduling only, no source URLs, image contents, database or admin changes. External image response time/failures remain dependent on the source.
+- npm test PASS (6); npm run build PASS; git diff --check PASS.
+- Next: confirm new Preview's hidden critical images load before pressing Explore; no numerical cold-cache speed claim until measured.
