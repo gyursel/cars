@@ -106,3 +106,13 @@ User signs in to the branch Preview locally, then inspect admin tabs/editor read
 - This changes request scheduling only, no source URLs, image contents, database or admin changes. External image response time/failures remain dependent on the source.
 - npm test PASS (6); npm run build PASS; git diff --check PASS.
 - Verified new Ready Preview in connected Chrome before pressing Explore: spotlight and first two cards are eager/low and complete with decoded dimensions 1600x1200, 1600x1628, 1600x1200; subsequent images remain lazy and unloaded. Browser cache was not cleared, so no numerical cold-cache speed claim is made.
+
+## Production release authorized and completed — 2026-10-19 16:02 Sofia
+- User explicitly requested latest changes on the official public site, superseding the earlier no-production-release constraint. Database/data restrictions remain in effect.
+- Verified Vercel team gyursels-projects / project cars-6lij owns pmselect.vercel.app. Existing production was cf6f28e; production promoted from tested branch commit 6ef8214.
+- Vercel connector still returns 403. Used authenticated connected browser UI; promotion rebuilt with Production environment (no environment edits).
+- Production deployment dpl_EP9W9KCEnAK49pkD7i66oxtXHNZk: Ready, Next.js, 22s build. Domain https://pmselect.vercel.app/ assigned and visited successfully.
+- Live production smoke PASS: intro → home (16 cars), search Audi Q7 (1), open detail, next photo (02/15), return to search and home. Browser captured error logs empty during these checks. Spotlight/first two cards are eager and decoded before Explore.
+- Production screenshot saved under docs/pmselect-evidence/production-2026-10-19.jpg.
+- No main merge performed: PR #8 remains draft against fix/pmselect-logo-asset; temporary main retarget was restored after confirming project-specific promotion avoids publishing the other cars project. No Firebase/Supabase writes, migrations, admin saves or permission/environment changes.
+- Authenticated admin UI inspection, controlled cold-cache timing/reduced-motion frame evidence and repair of external broken photos remain separate outstanding checks; no claim these passed. Runtime-server log/drain scan unavailable through connector; browser smoke is not a complete server health audit.
