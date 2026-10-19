@@ -116,3 +116,10 @@ User signs in to the branch Preview locally, then inspect admin tabs/editor read
 - Production screenshot saved under docs/pmselect-evidence/production-2026-10-19.jpg.
 - No main merge performed: PR #8 remains draft against fix/pmselect-logo-asset; temporary main retarget was restored after confirming project-specific promotion avoids publishing the other cars project. No Firebase/Supabase writes, migrations, admin saves or permission/environment changes.
 - Authenticated admin UI inspection, controlled cold-cache timing/reduced-motion frame evidence and repair of external broken photos remain separate outstanding checks; no claim these passed. Runtime-server log/drain scan unavailable through connector; browser smoke is not a complete server health audit.
+
+## Rapid-click navigation fix — 2026-10-19 16:20 Sofia
+- User reported unintended screens and flashing when clicking quickly. Source diagnosis: the transparent, pointer-pass-through veil restarted on every gesture while the old screen remained interactive during a delayed commit; history/admin navigation did not cancel pending work.
+- Added a single-flight transition controller: accept one gesture, commit once at 100ms, release at 320ms; repeated gestures do not restart the fade or queue another screen. Reduced motion commits immediately with a short duplicate-gesture guard.
+- Veil now intercepts pointer input during the screen swap; removed optimistic nav selection that could stick on a rejected action. Admin/gallery entries use the same guard. History/hash navigation and unmount cancel pending callbacks.
+- Added deterministic burst/double-click, cancellation/unmount and reduced-motion regression tests. Updated browser regression contract for one accepted gesture per transition.
+- npm test PASS (9); npm run build PASS; git diff --check PASS. Real Preview double-click/history checks next, then publish fix to the already-authorized public site after verification.

@@ -54,7 +54,8 @@ try {
     await page.getByRole('button', { name: 'Разгледай →', exact: true }).click();
     const nav = page.getByRole('navigation', { name: 'Мобилна навигация' });
     await nav.waitFor();
-    // Consecutive programmatic click events avoid Playwright's animation wait.
+    await page.locator('.pmselect-transition-veil').waitFor({ state: 'detached' });
+    // Burst on real controls: one accepted gesture, no hidden-screen click-through.
     const samples = await page.evaluate(async () => {
       const buttons = [...document.querySelectorAll('.apex-bottom-nav button')];
       const samples = [];
@@ -62,13 +63,14 @@ try {
         const start = performance.now(); buttons[index].click();
         await new Promise(requestAnimationFrame);
         const active = buttons.filter(button => button.classList.contains('is-active'));
-        samples.push({ count: active.length, selected: buttons.indexOf(active[0]), expected: index, ms: performance.now() - start });
+        samples.push({ count: active.length, selected: buttons.indexOf(active[0]), expected: 1, ms: performance.now() - start });
       }
       return samples;
     });
-    samples.forEach(sample => { assert.equal(sample.count, 1); assert.equal(sample.selected, sample.expected); });
+    samples.forEach(sample => { assert.equal(sample.count, 1); assert.ok([0, 1].includes(sample.selected), 'burst must not select an unintended screen'); });
     assert.equal(await nav.locator('[aria-current="page"]').count(), 1);
     await page.waitForTimeout(650);
+    assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Търсене и филтри');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `overflow at ${width}`);
     await nav.getByRole('button', { name: 'Контакти', exact: true }).click();
     await page.waitForTimeout(900);

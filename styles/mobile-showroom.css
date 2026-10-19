@@ -114,7 +114,7 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .detail-info h1{font:700 30px/1.25 var(--serif);letter-spacing:0}
 .detail-panel{animation:panel-arrive .35s ease-out both}
 .gallery-image-frame{animation:gallery-enter .45s cubic-bezier(.22,1,.36,1) both}
-.pmselect-transition-veil{position:fixed;inset:0;z-index:120;pointer-events:none;background:#050507;animation:scene-breathe 500ms ease-in-out both}
+.pmselect-transition-veil{position:fixed;inset:0;z-index:120;pointer-events:auto;touch-action:none;background:#050507;animation:scene-breathe 320ms ease-in-out both}
 @keyframes scene-breathe{0%{opacity:0}30%{opacity:.92}45%{opacity:.92}100%{opacity:0}}
 @keyframes marquee-x{to{transform:translateX(-50%)}}
 @keyframes light-pass{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
@@ -123,7 +123,7 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 @keyframes label-arrive{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
 @keyframes panel-arrive{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(max-width:380px){.hero-editorial h1{font-size:32px}.spotlight-copy h2{font-size:27px}.category-tabs button{font-size:12px}.mode-search .car-photo{flex-basis:82px;width:82px}.apex-bottom-nav button{padding-inline:8px}}
-@media(prefers-reduced-motion:reduce){.pmselect-transition-veil{display:none}.ribbon-track{animation:none}.hero-media{transform:none}.apex-car,.detail-panel{animation:none}}
+@media(prefers-reduced-motion:reduce){.pmselect-transition-veil{background:transparent;animation:none}.ribbon-track{animation:none}.hero-media{transform:none}.apex-car,.detail-panel{animation:none}}
 /* Full-bleed detail image and overlay controls follow the reference gallery. */
 .apex-detail{position:relative}
 .detail-header{position:absolute;top:18px;left:20px;right:20px;height:42px;padding:0;background:none;border:0;backdrop-filter:none}
