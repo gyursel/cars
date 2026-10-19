@@ -24,3 +24,11 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .intro-monogram,.model-watermark{display:none!important}
 .apex-grid .apex-car{content-visibility:auto;contain-intrinsic-size:auto 275px}
 @media(prefers-reduced-motion:reduce){.apex-car,.hero-editorial,.spotlight{animation:none!important;transition:none!important}}
+
+/* PMSELECT: consistent hierarchy in vehicle cards and fade gallery transitions. */
+.apex-grid .car-copy h3{font-family:var(--sans);font-size:clamp(12px,3.35vw,15px);font-weight:700;line-height:1.35;letter-spacing:-.02em;min-height:2.7em;max-height:2.7em;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.apex-grid .car-spec-line{font-family:var(--sans);font-size:10px;line-height:1.45;min-height:1.45em;margin:4px 0 7px}
+.apex-grid .car-bottom strong{font-family:var(--sans);font-size:clamp(12px,3.2vw,14px);font-weight:750;line-height:1.35;letter-spacing:-.02em}
+.detail-photo-fade{animation:pmselect-image-in .28s ease-out both}
+@keyframes pmselect-image-in{from{opacity:.15}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.detail-photo-fade{animation:none}}
