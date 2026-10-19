@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 
 // Temporary fixture route imports real UI components, never Firebase or Supabase.
 // Every browser request outside localhost is blocked, including analytics writes.
@@ -25,7 +26,8 @@ try {
     try { if ((await fetch('http://127.0.0.1:3100/__qa')).ok) break; } catch {}
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-  browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+  const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
+  browser = await chromium.launch({ ...(executablePath ? { executablePath } : {}), args: ['--no-sandbox'] });
   const errors = [];
   const adminWrites = [];
   const page = await browser.newPage();
@@ -115,6 +117,16 @@ try {
   await page.getByRole('button', { name: '← Към колекцията', exact: true }).click();
   await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Търсене и филтри' }).click();
   await page.getByRole('textbox', { name: 'Търси марка или модел' }).fill('няма такъв автомобил');
+  await page.getByRole('heading', { name: 'Няма съвпадения' }).waitFor();
+  // A saved car remains reachable even while search has no matches.
+  await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Начало', exact: true }).click();
+  await page.locator('.apex-car .save-car').first().click();
+  await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Любими автомобили' }).click();
+  await page.getByRole('heading', { name: 'Любими', exact: true }).waitFor();
+  assert.equal(await page.locator('.apex-car').count(), 1);
+  await page.locator('.apex-car .save-car').click();
+  assert.equal(await page.locator('.apex-car').count(), 0);
+  await page.getByRole('navigation', { name: 'Мобилна навигация' }).getByRole('button', { name: 'Търсене и филтри' }).click();
   await page.getByRole('heading', { name: 'Няма съвпадения' }).waitFor();
   // Exercise the real Home source with only service imports replaced by mocks.
   await page.goto('http://127.0.0.1:3100/__qa-home');

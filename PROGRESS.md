@@ -68,3 +68,17 @@ Inspect reference computed styles and interactions, then implement coordinated n
 - Existing upstream image failures now render a clear fallback rather than overflowing broken-image alt text.
 - Gallery next image, spec tab, fullscreen open/close and return to favourites verified in browser.
 - Shared transition provider added above screens so the fade survives opening/closing vehicle detail instead of disappearing with the old screen.
+
+## Continuation — 2026-10-19, from 21dcfa0
+- Read this log, AGENTS.md, PR #8 (still draft, base fix/pmselect-logo-asset), and the six latest branch commits. Continued the existing implementation.
+- Opened the Emergent reference and exercised intro → collection → search → home. Measured the public shell at 428px, heading font at Playfair Display 700 30px/37.5px, card title at Playfair Display 600 15px/20.625px, and marquee at 36s linear. Existing typography/marquee match these measurements.
+- Corrected public shell/detail/loading width from 480px to 428px; fixed navigation, detail actions and menu now fit the same shell. Admin styles/data unchanged.
+- Corrected filter scope: Home uses category only; Search uses query and advanced filters across the full collection; Favourites uses saved IDs independently. Search values are retained when navigating away. Extracted pure display selection and added regression coverage, including combined filters and missing values.
+- Extended the existing browser regression for saved-car isolation and removal while retaining the unsuccessful search. Browser launcher now supports an explicit executable, system Chromium, or standard Playwright installation.
+- Validation: npm ci PASS; npm test PASS (6 tests); npm run build PASS; git diff --check PASS.
+- Browser suite NOT verified: original runner failed because /usr/bin/chromium is absent. Playwright browser download returned invalid/truncated archives; system browser installation is unavailable here. No UI pass is inferred from unit/build results.
+- Real Preview NOT verified in this continuation: PR bot reports both projects Ready, but cars-6lij branch Preview redirects this browser to Vercel login. Vercel API and authenticated web fetch both return 403 for team gyursels-projects (team_ru46461D9ucBRXJ3QZKK0qRB). No Vercel CLI is installed. Protection/permissions were not altered.
+- No Firebase/Supabase writes, real admin saves, main merge or production release performed.
+
+## Next concrete step (current)
+Restore authorized Preview access for the connected Vercel account/team, then verify the new branch Preview at 390×844 and 428px: fade during rapid navigation/detail return, moving ribbon, category/search independence, favourites persistence, gallery/fullscreen, contact and admin login. Real admin checks must remain read-only. Run npm run test:browser with an installed Chromium; its service mocks block external requests and capture fixture admin saves without changing real data. Keep PR #8 draft until these checks and visual evidence pass.

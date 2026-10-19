@@ -3,10 +3,11 @@ import { useShowroomNavigation } from '../hooks/useShowroomNavigation';
 import GalleryImage from './GalleryImage';
 import VehicleImage from './VehicleImage';
 import { useSceneTransition } from '../hooks/useSceneTransition';
+import { numeric, carKey, selectCars } from '../lib/showroomCollection.mjs';
+export { numeric } from '../lib/showroomCollection.mjs';
 
 export const BRAND = 'PMSELECT CARS';
 export const imagesOf = car => [...new Set([car?.image, ...(car?.images || [])].filter(Boolean))].slice(0, 15);
-export const numeric = value => Number(String(value ?? '').replace(/[^\d.,]/g, '').replace(',', '.'));
 export const priceOf = value => value !== '' && value != null && Number.isFinite(numeric(value)) && numeric(value) > 0 ? `${numeric(value).toLocaleString('bg-BG')} €` : 'Цена при запитване';
 // Display-only cleanup: stored/imported titles stay intact in admin and tooltips.
 export const displayName = car => (car?.name || '').replace(/\s*(?:лизинг|обява\s*:).*$/iu, '').replace(/[,\s/]+$/, '').trim() || car?.name || '';
@@ -30,7 +31,6 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   const onlySaved = mode === 'saved';
   const [saved, setSaved] = useState([]);
   useEffect(() => { try { const value = JSON.parse(localStorage.getItem('apex-saved-cars') || '[]'); if (Array.isArray(value)) setSaved(value); } catch {} }, []);
-  const carKey = car => car.catalogId || `${car.name}|${car.year}|${car.image || ''}`;
   function toggleSaved(car) { const key = carKey(car); setSaved(previous => { const next = previous.includes(key) ? previous.filter(v => v !== key) : [...previous, key]; try { localStorage.setItem('apex-saved-cars', JSON.stringify(next)); } catch {} return next; }); }
   function enter() { transition(() => { setEntered(true); selectNavigation('home'); }); }
   const [category, setCategory] = useState('all');
@@ -41,15 +41,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   const [maxMileage, setMaxMileage] = useState('');
   const [sort, setSort] = useState('featured');
   const cars = useMemo(() => (lot.sections || []).flatMap((s, si) => (s.cars || []).filter(c => c.visible !== false).map((c, ci) => ({ ...c, sectionLabel: s.label, listKey: `${si}-${ci}` }))), [lot]);
-  const filtered = useMemo(() => cars.filter(c =>
-    onlySaved ? saved.includes(carKey(c)) :
-    (category === 'all' || c.sectionLabel === category) &&
-    (!query || `${c.name} ${c.desc || ''}`.toLocaleLowerCase('bg').includes(query.trim().toLocaleLowerCase('bg'))) &&
-    (!fuel || c.fuel === fuel) && (!gearbox || c.gearbox === gearbox) &&
-    (!maxPrice || (numeric(c.price) > 0 && numeric(c.price) <= Number(maxPrice))) &&
-    (!minYear || (numeric(c.year || (c.productionDate || '').match(/\d{4}/)?.[0]) >= Number(minYear))) &&
-    (!maxMileage || (c.mileage && numeric(c.mileage) <= Number(maxMileage)))
-  ).sort((a, b) => sort === 'price-up' ? (numeric(a.price) || Infinity) - (numeric(b.price) || Infinity) : sort === 'price-down' ? numeric(b.price) - numeric(a.price) : sort === 'year' ? numeric(b.year) - numeric(a.year) : Number(!!b.featured) - Number(!!a.featured)), [cars, query, category, fuel, gearbox, maxPrice, minYear, maxMileage, sort, onlySaved, saved]);
+  const filtered = useMemo(() => selectCars(cars, { mode, category, query, fuel, gearbox, maxPrice, minYear, maxMileage, sort, saved }), [cars, mode, query, category, fuel, gearbox, maxPrice, minYear, maxMileage, sort, saved]);
   const featured = cars.find(c => c.featured && imagesOf(c).length) || cars.find(c => /^BMW M5\b/i.test(c.name) && imagesOf(c).length) || cars.find(c => imagesOf(c).length);
   const hero = lot.introImage || '/apex-hero.webp';
   
