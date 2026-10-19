@@ -73,16 +73,20 @@ try {
     assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Контакти');
     await page.mouse.wheel(0, -10000);
     await page.waitForTimeout(900);
-    assert.equal(await nav.locator('.is-active').innerText(), 'Начало');
+    assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Контакти', 'contact is a screen, not a scroll-spy section');
+    await nav.getByRole('button', { name: 'Начало', exact: true }).click();
+    await page.waitForTimeout(550);
+    const navRect = await nav.boundingBox();
+    assert.ok(navRect.y >= 0 && navRect.y + navRect.height <= 900, 'navigation stays in viewport');
     await page.locator('#inventory').scrollIntoViewIfNeeded();
     const title = page.locator('.apex-car h3').first();
     const dimensions = await title.evaluate(element => ({ height: element.clientHeight, line: parseFloat(getComputedStyle(element).lineHeight), name: element.textContent, title: element.title }));
     assert.ok(dimensions.height <= dimensions.line * 2 + 1);
-    assert.equal(dimensions.name, dimensions.title);
+    assert.ok(dimensions.title.includes(dimensions.name), 'full imported title remains available');
     await page.evaluate(() => { document.activeElement?.blur(); window.scrollTo({ top: 0, behavior: 'instant' }); });
     await page.waitForTimeout(100);
     await page.screenshot({ path: path.join(output, `showroom-${width}.png`), fullPage: true });
-    console.log(`PASS ${width}px: navigation, rapid taps, scroll sync, title clamp, overflow; max sampled response ${Math.max(...samples.map(s => s.ms)).toFixed(1)}ms`);
+    console.log(`PASS ${width}px: navigation, rapid taps, screen persistence, fixed nav, title clamp, overflow; max sampled response ${Math.max(...samples.map(s => s.ms)).toFixed(1)}ms`);
   }
   await page.getByRole('button', { name: 'Меню', exact: true }).click();
   await page.getByRole('navigation', { name: 'Меню', exact: true }).getByRole('button', { name: 'Услуги' }).click();

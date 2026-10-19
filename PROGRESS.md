@@ -56,3 +56,13 @@ Inspect reference computed styles and interactions, then implement coordinated n
 - Last remote implementation commit: f051308e3b8eb2072c0aa97cebdefe159eb63411.
 - Four auth/source-fetch unit tests PASS. Build PASS before second checkpoint.
 - Next: verify corrected nav, gallery, filters, favourites, contact and admin login; save evidence.
+
+## Verified preview 58f8b71 (390×844)
+- Fixed navigation now at y772–832 (previously y2407 outside viewport); horizontal overflow 0.
+- Correct original logo, reference fonts and BMW M5 fallback spotlight visible.
+- Search "BMW M5" yields one matching vehicle; nonmatching search empty state works; clear restores all 16 vehicles.
+- Pending fix preserves return-scroll on detail close and isolates favourites from unrelated search/category filters.
+- Updated existing browser regression expectations for screen navigation and visible fixed nav. Browser suite not yet executed in this environment; manual connected-browser checks ongoing.
+- Browser testing found inactive Home lost its accessible name when its label was hidden; added permanent aria-label.
+- Preserved extra sorting/filter capabilities inside the collapsible filters to match the compact reference search.
+- Existing upstream image failures now render a clear fallback rather than overflowing broken-image alt text.

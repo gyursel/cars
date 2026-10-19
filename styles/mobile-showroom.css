@@ -148,3 +148,8 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .collection-screen:not([hidden]),.apex-detail{animation:screen-opacity .45s ease-out both}
 @keyframes screen-opacity{from{opacity:.2}to{opacity:1}}
 .spotlight-copy h2 button{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.mode-search .results-label{display:none}
+.mode-search .advanced-filters summary{padding-block:8px}
+.mode-search .advanced-filters .sort-field{display:flex;margin:12px 0}
+.vehicle-photo-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:65%;padding:12px;color:#85858f;font-size:11px;background:radial-gradient(ellipse at center,#25252d,#111116);text-align:center}
+.mode-search .vehicle-photo-fallback{height:100%;font-size:10px}
