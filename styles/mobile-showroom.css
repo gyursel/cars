@@ -32,3 +32,6 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .detail-photo-fade{animation:pmselect-image-in .28s ease-out both}
 @keyframes pmselect-image-in{from{opacity:.15}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.detail-photo-fade{animation:none}}
+
+/* Mobile rules must win over shared desktop typography. */
+@media(max-width:600px){.apex-grid .car-copy h3{font-size:clamp(12px,3.35vw,15px);line-height:1.35;min-height:2.7em;max-height:2.7em}.apex-grid .car-spec-line{font-size:10px;line-height:1.45;margin:4px 0 7px}.apex-grid .car-bottom strong{font-size:clamp(12px,3.2vw,14px)}}
