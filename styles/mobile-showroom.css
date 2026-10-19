@@ -22,7 +22,7 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 
 /* Clean mobile presentation: remove old ghost brand layers and reduce paint work. */
 .intro-monogram,.model-watermark{display:none!important}
-.apex-grid .apex-car{content-visibility:auto;contain-intrinsic-size:auto 275px}
+/* Avoid variable-height containment on vehicle cards: prevents jumpy restoration after detail view. */
 @media(prefers-reduced-motion:reduce){.apex-car,.hero-editorial,.spotlight{animation:none!important;transition:none!important}}
 
 /* PMSELECT: consistent hierarchy in vehicle cards and fade gallery transitions. */
