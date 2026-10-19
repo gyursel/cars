@@ -2,7 +2,7 @@ self.addEventListener('push', function(event) {
   const data = event.data ? event.data.json() : {};
   const title = data.title || '🚗 Нов автомобил в каталога!';
   const options = {
-    body: data.body || 'Менюто за днес е готово. Натиснете за да го видите.',
+    body: data.body || 'Разгледай актуалните предложения за автомобили.',
     icon: '/icon.svg',
     badge: '/icon.svg',
     data: { url: data.url || '/' }

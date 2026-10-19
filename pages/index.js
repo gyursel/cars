@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useId } from 'react';
 import Head from 'next/head';
+import GalleryImage from '../components/GalleryImage';
 import { BRAND, Mark, Showroom, CarDetail, ShowroomSkeleton } from '../components/Showroom';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc, collection, getDocs, increment } from 'firebase/firestore';
@@ -449,7 +450,6 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
 export default function Home() {
   const [lot, setLot] = useState(null);
   const [screen, setScreen] = useState('lot');
-  const [activeNav, setActiveNav] = useState('home');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
   const [toast, setToast] = useState('');
@@ -467,6 +467,8 @@ export default function Home() {
   const [todayViews, setTodayViews] = useState(null);
   const [galleryPage, setGalleryPage] = useState(0);
   const [selectedCar, setSelectedCar] = useState(null);
+  const collectionReturn = useRef(null);
+  const restoreCollection = useRef(false);
   const [loadError, setLoadError] = useState(false);
   const [branding, setBranding] = useState({});
   const [loginBusy, setLoginBusy] = useState(false);
@@ -519,6 +521,14 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const openAdminHash = () => {
+      if (window.location.hash === '#admin') setScreen(current => current === 'admin' ? current : 'login');
+    };
+    window.addEventListener('hashchange', openAdminHash);
+    return () => window.removeEventListener('hashchange', openAdminHash);
+  }, []);
+
+  useEffect(() => {
     async function trackView() {
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -566,44 +576,6 @@ export default function Home() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
-
-  const navLockUntil = useRef(0);
-
-  useEffect(() => {
-    if (screen !== 'lot') return;
-
-    const sectionIds = ['inventory', 'services', 'contact'];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible && Date.now() > navLockUntil.current) setActiveNav(visible.target.id);
-      },
-      { rootMargin: '-40% 0px -50% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    const els = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
-    els.forEach(el => observer.observe(el));
-
-    function onScroll() { if (Date.now() > navLockUntil.current && window.scrollY < 120) setActiveNav('home'); }
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    return () => { observer.disconnect(); window.removeEventListener('scroll', onScroll); };
-  }, [screen, lot]);
-
-  function handleNavigate(item) {
-    navLockUntil.current = Date.now() + 950;
-    if (screen !== 'lot') { setScreen('lot'); setSelectedCar(null); }
-    setActiveNav(item.key);
-
-    const scrollToTarget = () => {
-      if (!item.target) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-      const el = document.getElementById(item.target);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
-    if (screen !== 'lot') setTimeout(scrollToTarget, 60);
-    else scrollToTarget();
-  }
 
   async function handleInstallClick() {
     if (!installPromptEvent) return;
@@ -660,8 +632,36 @@ export default function Home() {
   }, [dirty]);
 
   useEffect(() => {
-    if (screen === 'car' || screen === 'admin' || screen === 'login') window.scrollTo(0, 0);
+    if (screen === 'lot' && restoreCollection.current) {
+      restoreCollection.current = false;
+      window.scrollTo({ top: collectionReturn.current?.top || 0, behavior: 'instant' });
+      collectionReturn.current?.opener?.focus({ preventScroll: true });
+    } else if (screen === 'car' || screen === 'admin' || screen === 'login') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }, [screen]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (preview || !['lot', 'car'].includes(screen)) return;
+      if (history.state?.pmselectVehicle && selectedCar) setScreen('car');
+      else if (screen === 'car') { restoreCollection.current = true; setScreen('lot'); }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [screen, preview, selectedCar]);
+
+  function openVehicle(car) {
+    collectionReturn.current = { top: window.scrollY, opener: document.activeElement };
+    history.pushState({ ...history.state, pmselectVehicle: true }, '', '#vehicle');
+    setSelectedCar(car); setPreview(false); setScreen('car');
+  }
+
+  function closeVehicle() {
+    if (preview) { setScreen('admin'); return; }
+    if (history.state?.pmselectVehicle) history.back();
+    else { restoreCollection.current = true; setScreen('lot'); }
+  }
 
   async function changePassword() {
     setPassMsg('');
@@ -866,8 +866,8 @@ export default function Home() {
         <link rel="manifest" href="/manifest.json" />
       </Head>
 
-      {lot && <div hidden={screen !== 'lot'}><Showroom lot={lot} branding={branding} error={loadError} activeNav={activeNav} onNavigate={handleNavigate} onAdmin={() => { setPassword(''); setLoginError(false); setScreen(adminLot ? 'admin' : 'login'); }} onGallery={() => { setGalleryPage(0); setScreen('gallery'); }} onOpen={car => { setSelectedCar(car); setPreview(false); setScreen('car'); }} /></div>}
-      {screen === 'car' && selectedCar && <CarDetail key={selectedCar.listKey || selectedCar.name} car={selectedCar} phone={preview ? adminLot?.phone : lot?.phone} preview={preview} onBack={() => { setScreen(preview ? 'admin' : 'lot'); if (!preview) setTimeout(() => document.getElementById('inventory')?.scrollIntoView(), 30); }} />}
+      {lot && <div hidden={screen !== 'lot'}><Showroom lot={lot} branding={branding} error={loadError} visible={screen === 'lot'} onAdmin={() => { setPassword(''); setLoginError(false); setScreen(adminLot ? 'admin' : 'login'); }} onGallery={() => { setGalleryPage(0); setScreen('gallery'); }} onOpen={openVehicle} /></div>}
+      {screen === 'car' && selectedCar && <CarDetail key={selectedCar.listKey || selectedCar.name} car={selectedCar} phone={preview ? adminLot?.phone : lot?.phone} preview={preview} onBack={closeVehicle} />}
 
       {screen === 'gallery' && lot && (() => {
         const pages = lot.fullGalleryImages || [];
@@ -919,7 +919,6 @@ export default function Home() {
               )}
 
               <div
-                key={galleryPage}
                 style={{
                   maxWidth: 560,
                   width: '100%',
@@ -928,10 +927,10 @@ export default function Home() {
                   background: '#12151a',
                   boxShadow: '0 24px 60px rgba(0,0,0,0.6), 0 2px 0 rgba(232,184,48,0.06) inset',
                   border: '1px solid rgba(201,162,39,0.35)',
-                  animation: 'fadeUp 0.35s ease both'
+                  aspectRatio: '4 / 3'
                 }}
               >
-                <img src={pages[galleryPage]} alt={`Снимка ${galleryPage + 1}`} style={{ width: '100%', display: 'block' }} />
+                <GalleryImage src={pages[galleryPage]} alt={`Снимка ${galleryPage + 1}`} />
               </div>
 
               {total > 1 && (
