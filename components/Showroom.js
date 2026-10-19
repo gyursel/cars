@@ -19,6 +19,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   const [query, setQuery] = useState('');
   const [entered, setEntered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [transitionPulse, setTransitionPulse] = useState(0);
   const { activeItem, mode, navigate: selectNavigation } = useShowroomNavigation(entered && visible);
   const searchOpen = mode === 'search';
   const onlySaved = mode === 'saved';
@@ -26,7 +27,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   useEffect(() => { try { const value = JSON.parse(localStorage.getItem('apex-saved-cars') || '[]'); if (Array.isArray(value)) setSaved(value); } catch {} }, []);
   const carKey = car => car.catalogId || `${car.name}|${car.year}|${car.image || ''}`;
   function toggleSaved(car) { const key = carKey(car); setSaved(previous => { const next = previous.includes(key) ? previous.filter(v => v !== key) : [...previous, key]; try { localStorage.setItem('apex-saved-cars', JSON.stringify(next)); } catch {} return next; }); }
-  function enter() { setEntered(true); selectNavigation('home'); }
+  function enter() { setTransitionPulse(p => p + 1); setEntered(true); selectNavigation('home'); }
   const [category, setCategory] = useState('all');
   const [fuel, setFuel] = useState('');
   const [gearbox, setGearbox] = useState('');
@@ -50,9 +51,10 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   // Use the approved PM Select artwork, not the legacy Firestore logo URL.
   const logo = '/pmselect-logo.png';
   const video = hero && /\.(mp4|webm|mov)(\?|$)/i.test(hero);
-  const navigate = key => { setMenuOpen(false); selectNavigation(key); };
+  const navigate = key => { setTransitionPulse(p => p + 1); setMenuOpen(false); selectNavigation(key); };
   const reset = () => { setQuery(''); setCategory('all'); setFuel(''); setGearbox(''); setMaxPrice(''); setMinYear(''); setMaxMileage(''); if (onlySaved) selectNavigation('home'); };
   return <div className={`apex-site ${entered ? 'is-entered' : 'is-intro'}`}>
+    {transitionPulse > 0 && <div key={transitionPulse} className="pmselect-transition-veil" aria-hidden="true"/>}
     <a className="skip-link" href="#inventory">Към автомобилите</a>
     {!entered && <section className={`apex-hero ${hero ? '' : 'no-photo'}`} aria-label="PMSELECT CARS">
       <div className="intro-brand"><Mark logo={logo}/></div>
