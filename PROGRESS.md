@@ -82,3 +82,20 @@ Inspect reference computed styles and interactions, then implement coordinated n
 
 ## Next concrete step (current)
 Restore authorized Preview access for the connected Vercel account/team, then verify the new branch Preview at 390×844 and 428px: fade during rapid navigation/detail return, moving ribbon, category/search independence, favourites persistence, gallery/fullscreen, contact and admin login. Real admin checks must remain read-only. Run npm run test:browser with an installed Chromium; its service mocks block external requests and capture fixture admin saves without changing real data. Keep PR #8 draft until these checks and visual evidence pass.
+
+## Connected-browser verification — 2026-10-19 15:47 Sofia
+- Branch head checked: cf6f28e; remote has no newer commit. Preview opens in the user's connected Chrome; earlier cloud-browser Vercel protection blocker does not apply to this session.
+- Tested actual branch Preview at https://cars-6lij-git-feat-emergent-motion-match-gyursels-projects.vercel.app (16 vehicles).
+- PASS intro → home; approved original logo; Playfair Display heading computes to 700 30px/37.5px. Marquee computes to 36s linear and its transform changes across observations, confirming movement.
+- PASS responsive shell/navigation at widths 360, 390, 428, 768 and 1440, height 844: zero horizontal overflow; shell capped at 428; fixed nav bottom 832 at every width.
+- PASS category Sedans (7), Search Audi Q7 across category (1), Home restores selected category, clear search restores 16, nonmatching search empty state.
+- PASS combined diesel/price <=11000 filter returns Infiniti Fx 30 and BMW 320; ascending prices run from 7999 to 87500.
+- PASS favourite add, independent favourites screen, persistence after page reload, removal. Removed the test favourite afterwards, restoring initial empty saved list. No catalog or backend writes.
+- PASS Audi Q7 detail, next image (02/15), specifications, fullscreen, ArrowRight, Escape, focus return to image opener, detail close restores Favourites. Detail has no horizontal overflow at 390px.
+- PASS contact screen and phone link; menu opens; Administration opens the labelled password form. No credentials entered and no admin save performed. User reported successful admin login earlier; authenticated admin UI still needs direct read-only inspection after user signs in to this Preview tab.
+- Observed upstream image failures for BMW X6 and Mini Cooper: existing fallback is visible. Source URLs/data not modified.
+- npm test PASS (6 tests); git diff --check PASS. No new application-code changes needed for these checks; automated full browser suite remains unexecuted in the container (Chromium unavailable).
+- No main merge, production release, environment change or Firebase/Supabase writes.
+
+## Next concrete step (latest)
+User signs in to the branch Preview locally, then inspect admin tabs/editor read-only without changing or saving data. Check transition timing/reduced-motion behaviour with sequential evidence before declaring exact animation parity. Keep PR #8 draft until final review; public navigation/filter/gallery checks above are verified, not blocked.
