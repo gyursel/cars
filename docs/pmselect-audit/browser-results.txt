@@ -1,0 +1,34 @@
+
+> cars-dealership@0.1.0 test:showroom
+> node tests/showroom-browser.cjs
+
+[
+  {
+    "width": 360,
+    "passed": true
+  },
+  {
+    "width": 375,
+    "passed": true
+  },
+  {
+    "width": 390,
+    "passed": true
+  },
+  {
+    "width": 430,
+    "passed": true
+  },
+  {
+    "width": 768,
+    "passed": true
+  },
+  {
+    "width": 1440,
+    "passed": true
+  },
+  {
+    "reducedMotion": true,
+    "passed": true
+  }
+]
