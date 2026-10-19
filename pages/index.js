@@ -1,22 +1,19 @@
 import { useState, useEffect, useRef, useId } from 'react';
 import Head from 'next/head';
+import { BRAND, Mark, Showroom, CarDetail, ShowroomSkeleton } from '../components/Showroom';
 import { db } from '../lib/firebase';
-import { doc, getDoc, setDoc, collection, getDocs, addDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, increment } from 'firebase/firestore';
 import { supabase } from '../lib/supabase';
 
 async function uploadImage(file) {
-  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-  const path = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
-
-  const { error } = await supabase.storage.from('vehicles').upload(path, file, {
-    cacheControl: '3600',
-    upsert: false
-  });
-
-  if (error) throw new Error(error.message || 'Upload failed');
-
-  const { data } = supabase.storage.from('vehicles').getPublicUrl(path);
-  return data.publicUrl;
+  if (!['image/jpeg','image/png','image/webp','image/avif','video/mp4','video/quicktime'].includes(file.type)) throw new Error('Избери JPG, PNG, WEBP, AVIF или MP4/MOV.');
+  if (file.size > 20 * 1024 * 1024) throw new Error('Максималният размер е 20 MB.');
+  const response = await fetch('/api/admin-upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: file.type, size: file.size }) });
+  const upload = await response.json();
+  if (!response.ok) throw new Error(upload.error || 'Неуспешна подготовка на качването');
+  const { error } = await supabase.storage.from('vehicles').uploadToSignedUrl(upload.path, upload.token, file, { contentType: file.type });
+  if (error) throw new Error(error.message || 'Неуспешно качване');
+  return upload.publicUrl;
 }
 
 function isIOSDevice() {
@@ -45,41 +42,12 @@ function cleanCarName(name) {
     .trim() || 'Автомобил';
 }
 
-const defaultLot = {
-  dealershipName: 'PM SELECT AUTOMOTIVE',
-  phone: '+359 899 225 640',
-  footerNote: 'Всички автомобили се предлагат с оглед и тест драйв на място.\nВъзможност за лизинг и бартер.',
-  heroImage: '',
-  fullGalleryImages: [],
-  demoExpired: false,
-  sections: [
-    {
-      label: 'Джипове / SUV',
-      cars: [
-        { name: 'BMW X5 30d', desc: 'Full extras, 3x S-line, keyless, панорама', price: '19999', year: '2018', productionDate: 'Май 2018', mileage: '240 000 км', fuel: 'Дизел', engine: 'Дизелов', power: '265 к.с.', euroStandard: 'Евро 6', displacement: '3000 см³', gearbox: 'Автоматична', color: 'Черен', additionalInfo: '', badges: ['4x4'], image: '', images: [] },
-        { name: 'Land Rover Discovery HSE', desc: 'Terrain Response, Meridian, 7 места', price: '14999', year: '2015', mileage: '230 000 км', fuel: 'Дизел', power: '256 к.с.', gearbox: 'Автоматична', badges: ['4x4', 'leasing'], image: '', images: [] }
-      ]
-    },
-    {
-      label: 'Седани',
-      cars: [
-        { name: 'Mercedes-Benz C 300 4-MATIC', desc: 'Mild Hybrid, MBUX, 360° камера', price: '32500', year: '2022', mileage: '85 780 км', fuel: 'Бензин хибрид', power: '258 к.с.', gearbox: 'Автоматична', badges: ['new'], image: '', images: [] },
-        { name: 'Audi A6 3.0 TDI Quattro', desc: 'S-line, Bose, Full LED', price: '12799', year: '2012', mileage: '250 000 км', fuel: 'Дизел', power: '245 к.с.', gearbox: 'Автоматична', badges: ['leasing'], image: '', images: [] }
-      ]
-    },
-    {
-      label: 'Спортни',
-      cars: [
-        { name: 'BMW M5 F10', desc: 'Пълна история, чипован, нови вериги', price: '34999', year: '2013', mileage: '150 000 км', fuel: 'Бензин', power: '560 к.с.', gearbox: 'Автоматична', badges: ['warranty'], image: '', images: [] }
-      ]
-    }
-  ]
-};
+const defaultLot = { dealershipName: BRAND, phone: '', footerNote: '', heroImage: '', fullGalleryImages: [], demoExpired: false, sections: [] };
 
 const BADGE_LABELS = { '4x4': '4x4', leasing: 'Лизинг/Бартер', new: 'Ново постъпление', warranty: 'Гаранция' };
 
 const CAR_CARD_ACCENTS = [
-  { border: '#C9A227', tint: '#FBF6E4' }, // gold
+  { border: '#a51c2b', tint: '#FBF6E4' }, // gold
   { border: '#3B6FA0', tint: '#EAF1F8' }, // blue
   { border: '#4E8B5C', tint: '#EAF5EC' }, // green
   { border: '#B0574D', tint: '#FBECE9' }, // terracotta
@@ -110,6 +78,7 @@ function SuggestInput({ value, onChange, placeholder, options = [], style = {}, 
         value={value || ''}
         onChange={onChange}
         placeholder={placeholder}
+        aria-label={placeholder}
         list={listId}
         autoComplete="off"
         title={title || 'Можеш да избереш предложение или да напишеш собствена стойност'}
@@ -166,7 +135,7 @@ function ImageUploader({ value, onChange, allowVideo = false }) {
           ) : (
             <img src={value} alt="" style={{ width: 90, height: 65, objectFit: 'cover', borderRadius: 6, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
           )}
-          <button onClick={() => inputRef.current.click()} style={{ position: 'absolute', bottom: 3, right: 3, background: 'rgba(10,12,16,0.85)', border: 'none', color: '#E8B830', fontSize: 10, padding: '2px 6px', borderRadius: 4, cursor: 'pointer' }}>
+          <button onClick={() => inputRef.current.click()} style={{ position: 'absolute', bottom: 3, right: 3, background: 'rgba(10,12,16,0.85)', border: 'none', color: '#f4f0ec', fontSize: 10, padding: '2px 6px', borderRadius: 4, cursor: 'pointer' }}>
             Смени
           </button>
           <button onClick={() => onChange('')} style={{ position: 'absolute', top: 3, right: 3, background: 'rgba(200,60,60,0.9)', border: 'none', color: 'white', fontSize: 13, width: 18, height: 18, borderRadius: '50%', lineHeight: '18px', textAlign: 'center', padding: 0, cursor: 'pointer' }}>
@@ -175,7 +144,7 @@ function ImageUploader({ value, onChange, allowVideo = false }) {
         </div>
       ) : (
         <button onClick={() => inputRef.current.click()} disabled={uploading}
-          style={{ padding: '5px 12px', border: '0.5px dashed rgba(140,150,160,0.5)', borderRadius: 6, background: 'transparent', color: uploading ? '#888' : '#C9A227', fontSize: 12, cursor: uploading ? 'default' : 'pointer' }}>
+          style={{ padding: '5px 12px', border: '0.5px dashed rgba(140,150,160,0.5)', borderRadius: 6, background: 'transparent', color: uploading ? '#888' : '#a51c2b', fontSize: 12, cursor: uploading ? 'default' : 'pointer' }}>
           {uploading ? '⏳ Качване...' : allowVideo ? '📷 Добави снимка/видео' : '📷 Добави снимка'}
         </button>
       )}
@@ -233,7 +202,7 @@ function FullGalleryUploader({ value = [], onChange }) {
           border: '0.5px dashed rgba(140,150,160,0.5)',
           borderRadius: 8,
           background: 'transparent',
-          color: uploading ? '#888' : '#C9A227',
+          color: uploading ? '#888' : '#a51c2b',
           fontSize: 13,
           cursor: uploading ? 'default' : 'pointer',
           width: '100%'
@@ -251,7 +220,7 @@ function FullGalleryUploader({ value = [], onChange }) {
           {(value || []).map((url, i) => (
             <div key={url + i} style={{ position: 'relative' }}>
               <img src={url} alt={`Снимка ${i + 1}`} style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 8, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
-              <div style={{ position: 'absolute', left: 5, bottom: 5, background: 'rgba(10,12,16,0.8)', color: '#E8B830', fontSize: 10, padding: '2px 6px', borderRadius: 10 }}>
+              <div style={{ position: 'absolute', left: 5, bottom: 5, background: 'rgba(10,12,16,0.8)', color: '#f4f0ec', fontSize: 10, padding: '2px 6px', borderRadius: 10 }}>
                 #{i + 1}
               </div>
               <button onClick={() => removeImage(i)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,60,60,0.92)', border: 'none', color: 'white', fontSize: 13, width: 20, height: 20, borderRadius: '50%', lineHeight: '20px', textAlign: 'center', padding: 0, cursor: 'pointer' }}>
@@ -322,7 +291,7 @@ function CarGalleryUploader({ value = [], onChange }) {
       <button
         onClick={() => inputRef.current.click()}
         disabled={uploading || images.length >= 15}
-        style={{ width: '100%', padding: '8px 12px', border: '0.5px dashed rgba(140,150,160,0.5)', borderRadius: 8, background: 'transparent', color: uploading ? '#888' : '#C9A227', fontSize: 12, cursor: uploading ? 'default' : 'pointer' }}
+        style={{ width: '100%', padding: '8px 12px', border: '0.5px dashed rgba(140,150,160,0.5)', borderRadius: 8, background: 'transparent', color: uploading ? '#888' : '#a51c2b', fontSize: 12, cursor: uploading ? 'default' : 'pointer' }}
       >
         {uploading ? '⏳ Качване...' : `📷 Снимки на автомобила (${images.length}/15)`}
       </button>
@@ -333,9 +302,10 @@ function CarGalleryUploader({ value = [], onChange }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))', gap: 8, marginTop: 9 }}>
           {images.map((url, i) => (
             <div key={url + i} style={{ position: 'relative', minWidth: 0 }}>
-              <img src={url} alt={`Автомобил ${i + 1}`} style={{ width: '100%', height: 78, objectFit: 'cover', borderRadius: 7, border: i === 0 ? '2px solid #C9A227' : '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
+              <img src={url} alt={`Автомобил ${i + 1}`} style={{ width: '100%', height: 78, objectFit: 'cover', borderRadius: 7, border: i === 0 ? '2px solid #a51c2b' : '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
               <button onClick={() => removeImage(i)} title="Изтрий снимката" style={{ position: 'absolute', top: 3, right: 3, width: 19, height: 19, borderRadius: '50%', border: 'none', background: 'rgba(200,60,60,.94)', color: '#fff', cursor: 'pointer', lineHeight: '19px', padding: 0 }}>×</button>
-              <button onClick={() => makeCover(i)} disabled={i === 0} style={{ position: 'absolute', left: 3, bottom: 3, border: 'none', borderRadius: 5, padding: '2px 5px', fontSize: 9, cursor: i === 0 ? 'default' : 'pointer', background: i === 0 ? '#C9A227' : 'rgba(10,12,16,.82)', color: i === 0 ? '#12151A' : '#E8B830' }}>
+              <button aria-label={`Премести снимка ${i + 1} наляво`} disabled={i === 0} onClick={() => { const next = [...images]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; onChange(next); }} style={{position:'absolute',top:3,left:3,background:'#12141a',color:'white',border:0,padding:'2px 7px'}}>←</button>
+              <button onClick={() => makeCover(i)} disabled={i === 0} style={{ position: 'absolute', left: 3, bottom: 3, border: 'none', borderRadius: 5, padding: '2px 5px', fontSize: 9, cursor: i === 0 ? 'default' : 'pointer', background: i === 0 ? '#a51c2b' : 'rgba(10,12,16,.82)', color: i === 0 ? '#12151A' : '#f4f0ec' }}>
                 {i === 0 ? 'Основна' : 'Направи основна'}
               </button>
             </div>
@@ -344,27 +314,6 @@ function CarGalleryUploader({ value = [], onChange }) {
       )}
     </div>
   );
-}
-
-function CarCard({ c, dark, badgeColors, index, onOpen }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => { const t=setTimeout(()=>setVisible(true),80+index*45); return()=>clearTimeout(t); },[index]);
-  const specs = [
-    ['▣', c.productionDate || c.year], ['◷', c.mileage], ['⛽', c.fuel],
-    ['⚡', c.power], ['▤', c.gearbox], ['◇', c.euroStandard || c.category]
-  ].filter(([,v])=>v);
-  return <article className="lux-car" onClick={onOpen} role="button" tabIndex={0} onKeyDown={e=>(e.key==='Enter'||e.key===' ')&&onOpen?.()} style={{opacity:visible?1:0,transform:visible?'none':'translateY(18px)'}}>
-    <div className="lux-photo-wrap">
-      {(c.image||c.images?.[0]) ? <img className="lux-photo" src={c.image||c.images?.[0]} alt={c.name}/> : <div className="lux-photo lux-placeholder">PM SELECT</div>}
-      {c.badges?.[0] && <span className="lux-tag">{BADGE_LABELS[c.badges[0]]||c.badges[0]}</span>}
-      <span className="lux-heart">♡</span>
-    </div>
-    <div className="lux-car-body">
-      <div className="lux-car-head"><h3>{cleanCarName(c.name)}</h3><strong>{Number(c.price||0).toLocaleString('bg-BG')} €</strong></div>
-      <div className="lux-specs">{specs.map(([i,v],n)=><div key={n}><span>{i}</span>{v}</div>)}</div>
-      <button className="lux-more" type="button">ВИЖ ОЩЕ <span>→</span></button>
-    </div>
-  </article>;
 }
 
 function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) {
@@ -390,14 +339,14 @@ function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) 
             autoFocus
             value={search}
             onChange={e => onSearch(e.target.value)}
-            placeholder="Търси по марка/модел..."
+            placeholder="Търси по марка/модел..." aria-label="Търси по марка/модел..."
             style={{ width: '100%', padding: '9px 12px', border: '0.5px solid rgba(140,150,160,0.4)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'white' }}
           />
         </div>
 
         <div style={{ overflowY: 'auto', padding: '0.5rem 1.1rem 1.25rem' }}>
           {loading && (
-            <div style={{ textAlign: 'center', color: '#C9A227', fontSize: 13, padding: '1.75rem 0' }}>⏳ Зареждане...</div>
+            <div style={{ textAlign: 'center', color: '#a51c2b', fontSize: 13, padding: '1.75rem 0' }}>⏳ Зареждане...</div>
           )}
 
           {!loading && filtered.length === 0 && (
@@ -427,7 +376,7 @@ function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) 
 
               <button
                 onClick={() => onAdd(c)}
-                style={{ background: '#12151A', color: '#E8B830', border: 'none', borderRadius: 6, padding: '7px 12px', fontSize: 12, fontWeight: 500, cursor: 'pointer', flexShrink: 0 }}
+                style={{ background: '#12151A', color: '#f4f0ec', border: 'none', borderRadius: 6, padding: '7px 12px', fontSize: 12, fontWeight: 500, cursor: 'pointer', flexShrink: 0 }}
               >
                 + Добави
               </button>
@@ -446,7 +395,7 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
         position: 'fixed',
         left: 12,
         right: 12,
-        bottom: 12,
+        bottom: 88,
         zIndex: 150,
         maxWidth: 440,
         margin: '0 auto',
@@ -463,12 +412,12 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
         animation: 'fadeUp 0.4s ease',
       }}
     >
-      <div style={{ width: 42, height: 42, borderRadius: 10, background: '#12151A', color: '#E8B830', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+      <div style={{ width: 42, height: 42, borderRadius: 10, background: '#12151A', color: '#f4f0ec', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
         🚗
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: dark ? '#E8B830' : '#12151A' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: dark ? '#f4f0ec' : '#12151A' }}>
           Добави {dealershipName} на началния екран
         </div>
         <div style={{ fontSize: 11, color: dark ? '#a8b0ba' : '#5B6470', marginTop: 2, lineHeight: 1.4 }}>
@@ -481,7 +430,7 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
       {!iosDevice && (
         <button
           onClick={onInstall}
-          style={{ background: '#12151A', color: '#E8B830', border: 'none', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
+          style={{ background: '#12151A', color: '#f4f0ec', border: 'none', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
         >
           Добави
         </button>
@@ -497,87 +446,17 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
   );
 }
 
-const NAV_ITEMS = [
-  { key: 'home', label: 'Начало', target: null },
-  { key: 'inventory', label: 'Автомобили', target: 'inventory' },
-  { key: 'services', label: 'Услуги', target: 'services' },
-  { key: 'contact', label: 'Контакти', target: 'contact' }
-];
-
-function NavIcon({ type, active }) {
-  const color = active ? '#E8B830' : '#9aa0aa';
-  const common = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' };
-  if (type === 'home') return (
-    <svg {...common}><path d="M4 11.5 12 4l8 7.5" /><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9" /></svg>
-  );
-  if (type === 'inventory') return (
-    <svg {...common}><path d="M4 16v-3.2c0-.5.2-1 .6-1.3l1.7-1.6c.3-.3.7-.5 1.2-.5h9c.5 0 .9.2 1.2.5l1.7 1.6c.4.3.6.8.6 1.3V16" /><path d="M4 16a1 1 0 0 0 1 1h1.2a1 1 0 0 0 1-1v-1H4z" /><path d="M20 16a1 1 0 0 1-1 1h-1.2a1 1 0 0 1-1-1v-1H20z" /><path d="M7 11.4h10" /><circle cx="7.5" cy="16" r="1.3" /><circle cx="16.5" cy="16" r="1.3" /></svg>
-  );
-  if (type === 'services') return (
-    <svg {...common}><path d="M12 3 4 9.5 12 21l8-11.5Z" /><path d="M4 9.5h16" /><path d="M9 3 7.2 9.5 12 21" /><path d="M15 3l1.8 6.5L12 21" /></svg>
-  );
-  if (type === 'contact') return (
-    <svg {...common}><path d="M6.6 4h2.7l1.3 4-1.9 1.3a11.4 11.4 0 0 0 5 5l1.3-1.9 4 1.3v2.7c0 1-.8 1.8-1.8 1.7A16.7 16.7 0 0 1 4.9 5.8C4.8 4.8 5.6 4 6.6 4Z" /></svg>
-  );
-  return null;
-}
-
-function SearchIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c7a45e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="10.5" cy="10.5" r="6.5" />
-      <path d="M20 20l-4.8-4.8" />
-    </svg>
-  );
-}
-
-function BottomNav({ active, onNavigate }) {
-  return (
-    <nav
-      style={{
-        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 40,
-        background: '#0c0e11', borderTop: '1px solid rgba(216,173,82,.28)',
-        borderTopLeftRadius: 18, borderTopRightRadius: 18,
-        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-        padding: '10px 6px calc(8px + env(safe-area-inset-bottom))',
-        boxShadow: '0 -6px 24px rgba(0,0,0,.35)'
-      }}
-    >
-      {NAV_ITEMS.map(item => {
-        const isActive = active === item.key;
-        return (
-          <button
-            key={item.key}
-            onClick={() => onNavigate(item)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-              padding: '4px 10px', flex: 1, color: isActive ? '#E8B830' : '#9aa0aa'
-            }}
-          >
-            <NavIcon type={item.key} active={isActive} />
-            <span style={{ fontSize: 11, letterSpacing: '.01em', fontWeight: isActive ? 700 : 500 }}>{item.label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
 export default function Home() {
   const [lot, setLot] = useState(null);
   const [screen, setScreen] = useState('lot');
   const [activeNav, setActiveNav] = useState('home');
-  const [carCategory, setCarCategory] = useState('all');
-  const [carSearch, setCarSearch] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
   const [toast, setToast] = useState('');
   const [adminLot, setAdminLot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [dark, setDark] = useState(true);
-  const [headerVisible, setHeaderVisible] = useState(false);
+  const dark = true;
   const [catalog, setCatalog] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [pickerSection, setPickerSection] = useState(null);
@@ -588,23 +467,24 @@ export default function Home() {
   const [todayViews, setTodayViews] = useState(null);
   const [galleryPage, setGalleryPage] = useState(0);
   const [selectedCar, setSelectedCar] = useState(null);
-  const [carPhotoPage, setCarPhotoPage] = useState(0);
-  const [currentPass, setCurrentPass] = useState(process.env.NEXT_PUBLIC_ADMIN_PASS || '1234');
+  const [loadError, setLoadError] = useState(false);
+  const [branding, setBranding] = useState({});
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [newPass1, setNewPass1] = useState('');
   const [newPass2, setNewPass2] = useState('');
   const [passSaving, setPassSaving] = useState(false);
   const [passMsg, setPassMsg] = useState('');
   const [pmImporting, setPmImporting] = useState(false);
   const [pmImportMsg, setPmImportMsg] = useState('');
-  const badgeColors = getBadgeColors(dark);
 
   useEffect(() => {
-    const saved = localStorage.getItem('lot_dark');
-    if (saved !== null) setDark(saved === '1');
+    if (window.location.hash === '#admin') setScreen('login');
 
     async function loadLot() {
       try {
-        const snap = await getDoc(doc(db, 'lot', 'daily'));
+        const snap = await Promise.race([getDoc(doc(db, 'lot', 'daily')), new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 12000))]);
 
         if (snap.exists()) {
           const data = snap.data();
@@ -621,32 +501,21 @@ export default function Home() {
               })
             }));
           }
-          setLot(data);
+          setLot({ ...defaultLot, ...data, sections: Array.isArray(data.sections) ? data.sections : [] });
         } else {
           setLot(defaultLot);
         }
       } catch (e) {
+        setLoadError(true);
         setLot(defaultLot);
       }
 
       setLoading(false);
-      setTimeout(() => setHeaderVisible(true), 50);
     }
 
     loadLot();
 
-    async function loadPassword() {
-      try {
-        const snap = await getDoc(doc(db, 'settings', 'admin'));
-        if (snap.exists() && snap.data().password) {
-          setCurrentPass(snap.data().password);
-        }
-      } catch (e) {
-        console.error('Грешка при зареждане на паролата:', e);
-      }
-    }
-
-    loadPassword();
+    getDoc(doc(db, 'settings', 'branding')).then(snap => { if (snap.exists()) setBranding(snap.data()); }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -752,32 +621,50 @@ export default function Home() {
     localStorage.setItem('lot_install_dismissed', String(Date.now()));
   }
 
-  function toggleDark() {
-    const next = !dark;
-    setDark(next);
-    localStorage.setItem('lot_dark', next ? '1' : '0');
-  }
-
   function showToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
   }
 
-  function doLogin() {
-    if (password === currentPass) {
-      setAdminLot(JSON.parse(JSON.stringify(lot)));
-      setScreen('admin');
-      setLoginError(false);
-    } else {
-      setLoginError(true);
-    }
+  async function doLogin() {
+    if (loginBusy) return;
+    setLoginBusy(true); setLoginError(false);
+    try {
+      if (loadError) throw new Error('Зареди успешно каталога преди редактиране, за да избегнеш презаписване на данни.');
+      const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Неуспешен вход');
+      setAdminLot(JSON.parse(JSON.stringify(lot))); setDirty(false); setPassword(''); setScreen('admin');
+    } catch (error) { setLoginError(error.message); }
+    finally { setLoginBusy(false); }
   }
+
+  async function logout() {
+    if (dirty && !confirm('Има незапазени промени. Да излезем ли без запис?')) return;
+    await fetch('/api/logout', { method: 'POST' });
+    setAdminLot(null); setDirty(false); setScreen('lot');
+  }
+
+  useEffect(() => {
+    if (!adminLot) return;
+    setDirty(JSON.stringify(adminLot) !== JSON.stringify(lot));
+  }, [adminLot, lot]);
+
+  useEffect(() => {
+    const warn = event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
+
+  useEffect(() => {
+    if (screen === 'car' || screen === 'admin' || screen === 'login') window.scrollTo(0, 0);
+  }, [screen]);
 
   async function changePassword() {
     setPassMsg('');
 
-    if (!newPass1 || newPass1.length < 4) {
-      setPassMsg('Паролата трябва да е поне 4 символа.');
+    if (!newPass1 || newPass1.length < 12) {
+      setPassMsg('Паролата трябва да е поне 12 символа.');
       return;
     }
 
@@ -789,8 +676,8 @@ export default function Home() {
     setPassSaving(true);
 
     try {
-      await setDoc(doc(db, 'settings', 'admin'), { password: newPass1 }, { merge: true });
-      setCurrentPass(newPass1);
+      const res = await fetch('/api/admin-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: newPass1 }) });
+      if (!res.ok) throw new Error('Неуспешен запис');
       setNewPass1('');
       setNewPass2('');
       setPassMsg('Паролата е сменена успешно.');
@@ -814,14 +701,12 @@ export default function Home() {
       if (!data?.sections?.length) throw new Error('Не са намерени автомобили');
       const importedLot = {
         ...adminLot,
-        dealershipName: data.dealershipName || adminLot.dealershipName,
+        dealershipName: adminLot.dealershipName,
         phone: data.phone || adminLot.phone,
         sections: data.sections
       };
-      await setDoc(doc(db, 'lot', 'daily'), importedLot);
       setAdminLot(importedLot);
-      setLot(importedLot);
-      setPmImportMsg(`Импортирани и записани са ${data.count || 0} автомобила във Firebase. За всяка обява са взети до 15 налични снимки и цялото описание от Mobile.bg.`);
+      setPmImportMsg(`Заредени в черновата са ${data.count || 0} автомобила. Натисни „Запази“, за да публикуваш. За всяка обява са взети до 15 налични снимки и цялото описание от Mobile.bg.`);
       showToast(`Импортирани ${data.count || 0} автомобила ✓`);
     } catch (e) {
       console.error(e);
@@ -836,49 +721,16 @@ export default function Home() {
     try {
       const m = JSON.parse(JSON.stringify(adminLot));
 
-      // Всеки автомобил с попълнено име се записва (или обновява) и в каталога „cars“,
-      // за да може да бъде преизползван неограничено пъти от там нататък.
-      for (const sec of m.sections) {
-        for (const c of sec.cars) {
-          if (!c.name || !c.name.trim()) continue;
-
-          const catalogData = {
-            name: c.name,
-            desc: c.desc || '',
-            price: c.price || '',
-            year: c.year || '',
-            mileage: c.mileage || '',
-            fuel: c.fuel || '',
-            power: c.power || '',
-            gearbox: c.gearbox || '',
-            productionDate: c.productionDate || '',
-            engine: c.engine || '',
-            euroStandard: c.euroStandard || '',
-            displacement: c.displacement || '',
-            color: c.color || '',
-            additionalInfo: c.additionalInfo || '',
-            badges: c.badges || [],
-            image: getCarImages(c)[0] || '',
-            images: getCarImages(c),
-            category: sec.label
-          };
-
-          if (c.catalogId) {
-            await setDoc(doc(db, 'cars', c.catalogId), catalogData, { merge: true });
-          } else {
-            const ref = await addDoc(collection(db, 'cars'), catalogData);
-            c.catalogId = ref.id;
-          }
-        }
-      }
-
-      await setDoc(doc(db, 'lot', 'daily'), m);
+      const response = await fetch('/api/admin-lot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lot: m }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Неуспешен запис');
+      Object.assign(m, result.lot);
       setLot(m);
       setAdminLot(m);
       showToast('Автокъщата е записана ✓');
-      setTimeout(() => setScreen('lot'), 1200);
+      setDirty(false);
     } catch (e) {
-      showToast('Грешка при записване!');
+      showToast(e.message || 'Грешка при записване!');
     }
 
     setSaving(false);
@@ -950,6 +802,7 @@ export default function Home() {
   function toggleBadge(si, ci, badge) {
     const m = JSON.parse(JSON.stringify(adminLot));
     const c = m.sections[si].cars[ci];
+    if (!Array.isArray(c.badges)) c.badges = [];
     const idx = c.badges.indexOf(badge);
 
     if (idx > -1) c.badges.splice(idx, 1);
@@ -959,6 +812,7 @@ export default function Home() {
   }
 
   function deleteCar(si, ci) {
+    if (!confirm('Да премахнем ли автомобила от тази селекция? Промяната влиза в сила след запис.')) return;
     const m = JSON.parse(JSON.stringify(adminLot));
     m.sections[si].cars.splice(ci, 1);
     setAdminLot(m);
@@ -977,6 +831,7 @@ export default function Home() {
   }
 
   function deleteSection(si) {
+    if (!confirm('Да премахнем ли категорията и автомобилите в нея от селекцията?')) return;
     const m = JSON.parse(JSON.stringify(adminLot));
     m.sections.splice(si, 1);
     setAdminLot(m);
@@ -994,314 +849,22 @@ export default function Home() {
   const textSub = dark ? '#a8b0ba' : '#5B6470';
   const border = dark ? 'rgba(140,150,160,0.18)' : 'rgba(140,150,160,0.28)';
 
-  const allSections = lot?.sections || [];
-  const totalCarsAll = allSections.reduce((sum, sec) => sum + (sec.cars?.length || 0), 0);
-  const searchNorm = carSearch.trim().toLowerCase();
-  const filteredSections = allSections
-    .filter(sec => carCategory === 'all' || sec.label === carCategory)
-    .map(sec => ({ ...sec, cars: (sec.cars || []).filter(c => !searchNorm || (c.name || '').toLowerCase().includes(searchNorm) || (c.desc || '').toLowerCase().includes(searchNorm)) }))
-    .filter(sec => sec.cars.length > 0);
-  const filteredCarCount = filteredSections.reduce((sum, sec) => sum + sec.cars.length, 0);
-  const carCountLabel = n => `${n} ${n === 1 ? 'автомобил' : 'автомобила'}`;
-
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0d0f12' }}>
-      <style>{`@keyframes pulse { 0%,100%{opacity:0.4;transform:scale(0.95)} 50%{opacity:1;transform:scale(1.05)} } @keyframes spin { to{transform:rotate(360deg)} }`}</style>
-      <div style={{ fontSize: 32, animation: 'pulse 1.5s ease infinite' }}>🚗</div>
-      <div style={{ marginTop: 16, color: '#C9A227', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Зареждане</div>
-      <div style={{ marginTop: 12, width: 32, height: 32, border: '2px solid rgba(201,162,39,0.2)', borderTop: '2px solid #C9A227', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
-    </div>
-  );
+  if (loading) return <ShowroomSkeleton />;
 
   return (
     <>
       <Head>
-        <title>{lot?.dealershipName || 'Автокъща'} — Автомобили</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{selectedCar && screen === 'car' ? `${selectedCar.name} | ${BRAND}` : `${BRAND} — Автомобили с характер`}</title>
+        <meta name="description" content="APEX DRIVE BULGARIA — автомобилна селекция, детайлни предложения и личен подход към следващия ти автомобил." />
+        <meta property="og:title" content={BRAND} />
+        <meta property="og:type" content="website" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content={dark ? '#0d0f12' : '#12151A'} />
         <link rel="manifest" href="/manifest.json" />
       </Head>
 
-      <style>{`
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: ${bg}; transition: background 0.3s; }
-        input, button, select { font-family: inherit; }
-
-        @keyframes fadeDown {
-          from { opacity: 0; transform: translateY(-12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-label { animation: fadeUp 0.5s ease both; }
-
-        .lot-hero {
-          min-height: 170px;
-          padding: 34px 56px 30px;
-          overflow: hidden;
-          isolation: isolate;
-          position: relative;
-        }
-
-        .lot-hero::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background:
-            linear-gradient(90deg, rgba(2,3,5,.78) 0%, rgba(4,5,7,.42) 36%, rgba(2,3,5,.34) 60%, rgba(2,3,5,.76) 100%),
-            linear-gradient(180deg, rgba(2,3,5,.4) 0%, rgba(2,3,5,.15) 45%, rgba(2,3,5,.62) 100%);
-          z-index: -1;
-          pointer-events: none;
-        }
-
-        .lot-hero::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          box-shadow: inset 0 0 48px rgba(0,0,0,.62);
-          z-index: 0;
-          pointer-events: none;
-        }
-
-        .hero-copy {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-shadow: 0 2px 10px rgba(0,0,0,.8);
-        }
-
-        .hero-kicker, .hero-subtitle {
-          font-family: -apple-system, 'Segoe UI', sans-serif;
-          color: #dfe3e8;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: .22em;
-        }
-
-        .hero-kicker { font-size: 12px; margin-bottom: 4px; }
-
-        .hero-title {
-          font-family: -apple-system, 'Segoe UI', sans-serif;
-          font-size: clamp(26px, 7vw, 40px);
-          line-height: 1.02;
-          font-weight: 800;
-          letter-spacing: .01em;
-          color: #E8B830;
-          text-shadow: 0 2px 0 rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.9);
-          margin: 1px 0 8px;
-        }
-
-        .hero-ornament {
-          width: min(200px, 58vw);
-          height: 3px;
-          background: linear-gradient(90deg, transparent, #C9A227 20%, #E8B830 50%, #C9A227 80%, transparent);
-          margin-bottom: 10px;
-          box-shadow: 0 1px 6px rgba(232,184,48,0.4);
-        }
-
-        .hero-subtitle { font-size: 11px; opacity: 0.9; }
-
-        .lux-shell{max-width:1180px;margin:0 auto;padding:0 28px}.lux-top{background:#080a0c;border-bottom:1px solid rgba(210,171,83,.35);color:#eee}.lux-top-inner{max-width:1180px;margin:auto;padding:9px 28px;display:flex;gap:28px;align-items:center;font-size:12px}.lux-top-inner .spacer{flex:1}.lux-contact{color:#e0b85c}.lux-nav{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:34px;padding:20px 5%;border-bottom:1px solid rgba(218,178,82,.25);background:linear-gradient(#07090bcc,transparent)}.lux-logo{font-family:Georgia,serif;color:#e2ba61;font-size:23px;letter-spacing:.12em;font-weight:700;margin-right:auto}.lux-logo small{display:block;font:8px sans-serif;letter-spacing:.45em;text-align:center;color:#eee}.lux-nav a{color:#f5f5f5;font-size:11px;letter-spacing:.08em}.lux-hero-inner{position:relative;z-index:2;width:min(1180px,92%);margin:auto;text-align:left;align-self:center}.lux-hero-copy{width:min(550px,62%)}.lux-eyebrow{color:#e1ba61;letter-spacing:.22em;font-size:12px}.lux-main-title{font-family:Georgia,serif;color:#e4bd67;font-size:clamp(45px,6vw,76px);line-height:.9;margin:14px 0 16px;text-shadow:0 4px 18px #000}.lux-main-title span{display:block;color:#fff;font-size:.68em}.lux-trust{color:#fff;letter-spacing:.2em;font-size:11px;margin:22px 0}.lux-cta{background:linear-gradient(100deg,#d8bc8a,#f0ddbb,#c69f64);border:0;color:#090909;font-weight:800;letter-spacing:.04em}.lux-more{letter-spacing:.04em}.lux-cta{padding:15px 24px;border-radius:4px}.lux-benefits{background:#0b0d0f;border-top:1px solid #282318;border-bottom:1px solid #282318}.lux-benefits-inner{max-width:1180px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}.lux-benefit{padding:20px 22px;border-right:1px solid #2a2a2a;color:#fff;font-size:12px}.lux-benefit b{display:block;margin-bottom:4px}.lux-benefit span{color:#aaa;font-size:10px}.lux-inventory{max-width:1180px;margin:auto;padding:30px 28px 50px}.lux-section-title{display:flex;align-items:center;gap:18px;margin-bottom:22px;color:#fff;font-size:21px;letter-spacing:.08em}.lux-section-title:after{content:'';height:1px;flex:1;background:linear-gradient(90deg,#b9913e,transparent)}.lux-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.lux-car{background:linear-gradient(180deg,#0b0d0f 0%,#090b0d 100%);border:1px solid #6f5b38;border-radius:8px;overflow:hidden;cursor:pointer;transition:.35s;box-shadow:inset 0 0 0 1px rgba(238,205,145,.035)}.lux-car:hover{transform:translateY(-3px)!important;border-color:#a68a5c}.lux-photo-wrap{height:235px;position:relative;background:#111;overflow:hidden}.lux-photo{width:100%;height:100%;object-fit:cover;display:block}.lux-placeholder{display:flex;align-items:center;justify-content:center;color:#c4a36d;letter-spacing:.2em}.lux-tag{position:absolute;top:10px;left:10px;background:linear-gradient(180deg,#ead0a0,#b99154);color:#111;padding:5px 9px;border-radius:4px;font-size:10px;font-weight:800}.lux-heart{position:absolute;top:9px;right:11px;color:#f5f1e8;font-size:24px}.lux-car-body{padding:14px}.lux-car-head{display:flex;gap:10px;justify-content:space-between;align-items:start}.lux-car-head h3{font-family:'Montserrat',-apple-system,sans-serif;font-weight:600;font-size:17px;letter-spacing:.005em;line-height:1.32;background:linear-gradient(100deg,#ead9ac 0%,#dcb459 50%,#ead9ac 100%);-webkit-background-clip:text;background-clip:text;color:#e0be6f;-webkit-text-fill-color:transparent}.lux-car-head strong{color:#e5bf7a;font-size:18px;white-space:nowrap}.lux-specs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;margin:17px 0;color:#efdcb8;font-size:10px;font-weight:500}.lux-specs div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lux-specs span{color:#e7c47e;margin-right:6px}.lux-more{width:100%;padding:10px;border-radius:4px;background:linear-gradient(180deg,#37332d 0%,#211f1c 52%,#171615 100%);border:1px solid #9a7a48;color:#f7f4ee;text-shadow:0 1px 0 #000;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);font-weight:800}.lux-more:hover{background:linear-gradient(180deg,#433d34 0%,#28241f 52%,#1a1816 100%);border-color:#c39d60}.lux-more span{margin-left:8px;color:#e2c28b}.lux-footer-banner{max-width:1180px;margin:0 auto 35px;border-top:1px solid #6c562c;border-bottom:1px solid #6c562c;padding:28px;color:#ddd;display:flex;justify-content:space-between;align-items:center}.lux-footer-banner b{font-family:Georgia,serif;color:#e2b75b;font-size:25px}.lux-footer{border-top:1px solid #3c321f;padding:24px;color:#aaa;text-align:center;font-size:11px}
-
-        @media(max-width:900px){.lux-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lux-nav a{display:none}.lux-benefits-inner{grid-template-columns:repeat(2,1fr)}.lux-hero-copy{width:75%}}
-        @media(max-width:600px){.lux-top-inner{padding:8px 14px;gap:12px}.lux-top-inner span:not(:first-child){display:none}.lux-nav{padding:17px 20px}.lux-logo{font-size:19px}.lot-hero{min-height:0!important;height:auto!important;aspect-ratio:4/3;padding:0!important;background-image:url(/pm-select-hero-mobile.png)!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;background-color:#080a0c!important}.lux-hero-copy{width:100%;padding-top:70px}.lux-main-title{font-size:46px}.lux-grid{grid-template-columns:1fr}.lux-inventory{padding:24px 12px}.lux-photo-wrap{height:245px}.lux-benefits-inner{grid-template-columns:1fr 1fr}.lux-benefit{padding:14px 10px;font-size:10px}.lux-benefit span{display:none}.lux-footer-banner{margin:0 12px 25px;gap:15px;align-items:flex-start;flex-direction:column}.lux-specs{font-size:11px}.lux-section-title{font-size:17px}}
-        @media (max-width: 520px) {
-          .lot-hero {
-            min-height: 0 !important;
-            height: auto !important;
-            aspect-ratio: 4 / 3;
-            padding: 0 !important;
-            background-image: url(/pm-select-hero-mobile.png) !important;
-            background-size: cover !important;
-            background-position: center center !important;
-            background-repeat: no-repeat !important;
-          }
-
-          .hero-kicker { font-size: 11px; }
-          .hero-title { font-size: clamp(30px, 9vw, 40px); }
-          .hero-subtitle { font-size: 10px; }
-        }
-
-        /* Плавна, "пружинираща" анимация при натискане на всеки бутон в приложението. */
-        button:not(:disabled), .lux-cta, .lux-more, a[href^="tel:"] {
-          transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease, box-shadow 0.2s ease;
-          will-change: transform;
-        }
-        button:not(:disabled):active, .lux-cta:active, .lux-more:active, a[href^="tel:"]:active {
-          transform: scale(0.93);
-          filter: brightness(0.9);
-          transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), filter 0.08s ease;
-        }
-      `}</style>
-
-      {screen === 'lot' && lot && (
-        <div style={{background:'#080a0c',minHeight:'100vh',paddingBottom: lot.demoExpired ? 0 : 'calc(76px + env(safe-area-inset-bottom))'}}>
-          {lot.demoExpired && (
-            <div style={{position:'sticky',top:0,zIndex:50,background:'#C9302C',color:'white',textAlign:'center',padding:'12px 16px',fontSize:14,fontWeight:700,letterSpacing:'.02em'}}>
-              ⚠ Пробният период е приключил — това е демо версия на приложението.
-            </div>
-          )}
-          <div className="lux-top"><div className="lux-top-inner"><span className="lux-contact">☎ {lot.phone}</span><span>✉ office@pmselect.bg</span><span>⌖ Варна, България</span><span className="spacer"/><span>f　◎　♪</span></div></div>
-          <section className="lot-hero" style={{minHeight:620,background:'url(/pm-select-hero.png) center/cover no-repeat',display:'flex'}} aria-label="PM SELECT AUTOMOTIVE — КАЧЕСТВО • КОРЕКТНОСТ • ДОВЕРИЕ">
-            <button onClick={()=>{setPassword('');setLoginError(false);setScreen('login')}} style={{position:'absolute',right:12,bottom:12,zIndex:8,background:'#0b0d0ecc',border:'1px solid #8b6d32',color:'#d8ad52',padding:'6px 9px',borderRadius:5}}>⚙</button>
-          </section>
-          {!lot.demoExpired && (<>
-          <main id="inventory" className="lux-inventory">
-            <div style={{color:'#a98b4e',fontSize:11,letterSpacing:'.22em',fontWeight:700,marginBottom:10}}>PM SELECT / КОЛЕКЦИЯТА</div>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',flexWrap:'wrap',gap:10,marginBottom:22}}>
-              <h2 style={{margin:0,color:'#fff',fontSize:'clamp(28px,4vw,38px)',fontWeight:600}}>Актуални предложения<span style={{color:'#E8B830'}}>.</span></h2>
-              <div style={{color:'#8b929c',fontSize:13,paddingBottom:6}}>{carCountLabel(filteredCarCount)}</div>
-            </div>
-
-            <div style={{display:'flex',gap:10,overflowX:'auto',paddingBottom:4,marginBottom:14,scrollbarWidth:'none'}}>
-              <button
-                onClick={()=>setCarCategory('all')}
-                style={{flexShrink:0,padding:'11px 18px',borderRadius:9,fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',background: carCategory==='all' ? 'rgba(232,184,48,.12)' : 'transparent',border: carCategory==='all' ? '1px solid #C9A227' : '1px solid rgba(255,255,255,.14)',color: carCategory==='all' ? '#E8B830' : '#c7ccd3'}}
-              >Всички</button>
-              {allSections.map((sec,si) => (
-                <button
-                  key={si}
-                  onClick={()=>setCarCategory(sec.label)}
-                  style={{flexShrink:0,padding:'11px 18px',borderRadius:9,fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',background: carCategory===sec.label ? 'rgba(232,184,48,.12)' : 'transparent',border: carCategory===sec.label ? '1px solid #C9A227' : '1px solid rgba(255,255,255,.14)',color: carCategory===sec.label ? '#E8B830' : '#c7ccd3'}}
-                >{sec.label}</button>
-              ))}
-            </div>
-
-            <div style={{display:'flex',alignItems:'center',gap:10,border:'1px solid rgba(255,255,255,.14)',borderRadius:10,padding:'12px 16px',marginBottom:26}}>
-              <SearchIcon />
-              <input
-                value={carSearch}
-                onChange={e=>setCarSearch(e.target.value)}
-                placeholder="Марка, модел..."
-                style={{flex:1,background:'none',border:'none',outline:'none',color:'#fff',fontSize:14}}
-              />
-              {carSearch && (
-                <button onClick={()=>setCarSearch('')} style={{background:'none',border:'none',color:'#8b929c',fontSize:16,cursor:'pointer',padding:'0 2px'}}>×</button>
-              )}
-            </div>
-
-            {filteredSections.length === 0 && (
-              <div style={{textAlign:'center',color:'#8b929c',fontSize:14,padding:'40px 0'}}>Няма намерени автомобили по зададените критерии.</div>
-            )}
-            {filteredSections.map((sec,si)=><section key={si} style={{marginBottom:30}}><div style={{color:'#d7ad51',fontSize:11,letterSpacing:'.14em',margin:'0 0 12px'}}>{sec.label.toUpperCase()}</div><div className="lux-grid">{sec.cars.map((c,ci)=><CarCard key={ci} c={c} dark={true} badgeColors={badgeColors} index={ci} onOpen={()=>{setSelectedCar({...c,sectionLabel:sec.label});setCarPhotoPage(0);setScreen('car')}}/>)}</div></section>)}
-          </main>
-          <section id="services" className="lux-benefits">
-            <div className="lux-benefits-inner">
-              <div className="lux-benefit"><b>◈ Гаранция</b><span>Всеки автомобил преминава пълна техническа проверка</span></div>
-              <div className="lux-benefit"><b>◈ Финансиране</b><span>Изгодни лизингови и кредитни схеми на място</span></div>
-              <div className="lux-benefit"><b>◈ Trade-in</b><span>Приемаме вашия автомобил като част от плащането</span></div>
-              <div className="lux-benefit" style={{borderRight:'none'}}><b>◈ Доставка</b><span>Организираме транспорт до всяка точка в страната</span></div>
-            </div>
-          </section>
-          <div className="lux-footer-banner"><div><b>“</b> Автомобили за хора, които не правят компромис със стила.</div><a href={`tel:${(lot.phone||'').replace(/\s/g,'')}`} className="lux-cta" style={{textDecoration:'none'}}>СВЪРЖЕТЕ СЕ С НАС　→</a></div>
-          <footer id="contact" className="lux-footer">⌖ Варна, България　　☎ {lot.phone}　　✉ office@pmselect.bg<br/><br/>© 2026 PM SELECT AUTOMOTIVE · Качество. Коректност. Доверие.</footer>
-          </>)}
-          {!lot.demoExpired && <BottomNav active={activeNav} onNavigate={handleNavigate} />}
-        </div>
-      )}
-
-      {screen === 'car' && selectedCar && (() => {
-        const photos = getCarImages(selectedCar);
-        const total = photos.length;
-        const current = total ? ((carPhotoPage % total) + total) % total : 0;
-        const goTo = (n) => total && setCarPhotoPage(((n % total) + total) % total);
-        const technicalRows = [
-          ['Дата на производство', selectedCar.productionDate || selectedCar.year],
-          ['Двигател', selectedCar.engine || selectedCar.fuel],
-          ['Мощност', selectedCar.power],
-          ['Евростандарт', selectedCar.euroStandard],
-          ['Кубатура [куб.см]', selectedCar.displacement],
-          ['Скоростна кутия', selectedCar.gearbox],
-          ['Категория', selectedCar.category || selectedCar.sectionLabel],
-          ['Пробег [км]', selectedCar.mileage],
-          ['Цвят', selectedCar.color]
-        ].filter(([, v]) => v);
-
-        return (
-          <div style={{ background: bg, minHeight: '100vh', color: textMain }}>
-            <div style={{ position: 'sticky', top: 0, zIndex: 20, background: dark ? 'rgba(13,15,18,.94)' : 'rgba(245,246,247,.94)', backdropFilter: 'blur(10px)', borderBottom: `1px solid ${border}`, padding: '0.8rem 1rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button onClick={() => { setScreen('lot'); setSelectedCar(null); }} style={{ background: 'none', border: '1px solid rgba(201,162,39,.45)', color: '#C9A227', padding: '7px 12px', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>← Назад</button>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cleanCarName(selectedCar.name)}</div>
-                <div style={{ fontSize: 11, color: textSub }}>Детайли за автомобила</div>
-              </div>
-            </div>
-
-            <div style={{ maxWidth: 760, margin: '0 auto', padding: '14px 14px 32px' }}>
-              {total > 0 ? (
-                <>
-                  <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', background: '#090b0e', border: '1px solid rgba(201,162,39,.3)' }}>
-                    <img src={photos[current]} alt={`${cleanCarName(selectedCar.name)} - снимка ${current + 1}`} style={{ width: '100%', maxHeight: 520, objectFit: 'contain', display: 'block', background: '#090b0e' }} />
-                    {total > 1 && <>
-                      <button onClick={() => goTo(current - 1)} aria-label="Предишна снимка" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(232,184,48,.42)', background: 'rgba(6,7,10,.65)', color: '#E8B830', fontSize: 24, cursor: 'pointer' }}>‹</button>
-                      <button onClick={() => goTo(current + 1)} aria-label="Следваща снимка" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(232,184,48,.42)', background: 'rgba(6,7,10,.65)', color: '#E8B830', fontSize: 24, cursor: 'pointer' }}>›</button>
-                    </>}
-                    <div style={{ position: 'absolute', right: 10, bottom: 10, background: 'rgba(6,7,10,.72)', color: '#E8B830', padding: '4px 8px', borderRadius: 20, fontSize: 11 }}>{current + 1} / {total}</div>
-                  </div>
-
-                  {total > 1 && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(74px, 1fr))', gap: 7, marginTop: 8 }}>
-                      {photos.map((url, i) => (
-                        <button key={url + i} onClick={() => setCarPhotoPage(i)} style={{ border: i === current ? '2px solid #C9A227' : `1px solid ${border}`, borderRadius: 8, overflow: 'hidden', padding: 0, background: '#111', cursor: 'pointer' }}>
-                          <img src={url} alt={`Миниатюра ${i + 1}`} style={{ width: '100%', height: 64, objectFit: 'cover', display: 'block' }} />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div style={{ height: 240, borderRadius: 14, background: cardBg, border: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: textSub, fontSize: 14 }}>Няма качени снимки</div>
-              )}
-
-              <div style={{ marginTop: 16, background: cardBg, border: `1px solid ${border}`, borderRadius: 14, padding: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  <div style={{ fontSize: 22, fontWeight: 850 }}>{cleanCarName(selectedCar.name)}</div>
-                  <div style={{ fontSize: 23, fontWeight: 900, color: '#C9A227' }}>{Number(selectedCar.price || 0).toLocaleString('bg-BG')} €</div>
-                </div>
-                {selectedCar.desc && <div style={{ marginTop: 8, color: textSub, fontSize: 13, lineHeight: 1.6 }}>{selectedCar.desc}</div>}
-
-                {technicalRows.length > 0 && (
-                  <div style={{ marginTop: 18, border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
-                    <div style={{ padding: '14px 16px 10px', fontSize: 20, fontWeight: 900 }}>Технически данни</div>
-                    <div style={{ padding: '0 12px 12px' }}>
-                      {technicalRows.map(([label, value], i) => (
-                        <div key={label} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 14, padding: '11px 12px', background: i % 2 === 0 ? (dark ? 'rgba(255,255,255,.045)' : '#EEF2F8') : 'transparent', alignItems: 'center' }}>
-                          <div style={{ fontSize: 14, color: textMain }}>{label}</div>
-                          <div style={{ fontSize: 14, fontWeight: 800 }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedCar.additionalInfo && (
-                  <div style={{ marginTop: 18, border: `1px solid ${border}`, borderRadius: 12, padding: '16px' }}>
-                    <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 10 }}>Допълнителна информация</div>
-                    <div style={{ whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.75, color: textMain }}>{selectedCar.additionalInfo}</div>
-                  </div>
-                )}
-
-                {selectedCar.badges?.length > 0 && (
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 13 }}>
-                    {selectedCar.badges.map(b => <span key={b} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 700, background: badgeColors[b]?.bg, color: badgeColors[b]?.color }}>{BADGE_LABELS[b]}</span>)}
-                  </div>
-                )}
-
-                {lot.phone && (
-                  <a href={`tel:${lot.phone.replace(/\s/g, '')}`} style={{ marginTop: 16, display: 'block', width: '100%', textAlign: 'center', textDecoration: 'none', background: '#C9A227', color: '#12151A', padding: '12px 14px', borderRadius: 10, fontSize: 14, fontWeight: 800 }}>📞 Обади се за автомобила</a>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {lot && <div hidden={screen !== 'lot'}><Showroom lot={lot} branding={branding} error={loadError} activeNav={activeNav} onNavigate={handleNavigate} onAdmin={() => { setPassword(''); setLoginError(false); setScreen(adminLot ? 'admin' : 'login'); }} onGallery={() => { setGalleryPage(0); setScreen('gallery'); }} onOpen={car => { setSelectedCar(car); setPreview(false); setScreen('car'); }} /></div>}
+      {screen === 'car' && selectedCar && <CarDetail key={selectedCar.listKey || selectedCar.name} car={selectedCar} phone={preview ? adminLot?.phone : lot?.phone} preview={preview} onBack={() => { setScreen(preview ? 'admin' : 'lot'); if (!preview) setTimeout(() => document.getElementById('inventory')?.scrollIntoView(), 30); }} />}
 
       {screen === 'gallery' && lot && (() => {
         const pages = lot.fullGalleryImages || [];
@@ -1321,12 +884,12 @@ export default function Home() {
         return (
           <div style={{ background: '#06070a', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(6,7,10,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(201,162,39,0.25)', padding: '0.9rem 1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <button onClick={() => setScreen('lot')} style={{ background: 'none', border: '1px solid rgba(232,184,48,0.3)', color: '#E8B830', padding: '7px 12px', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>
+              <button onClick={() => setScreen('lot')} style={{ background: 'none', border: '1px solid rgba(232,184,48,0.3)', color: '#f4f0ec', padding: '7px 12px', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>
                 ← Назад
               </button>
 
               <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#E8B830', fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                <div style={{ color: '#f4f0ec', fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
                   Галерия
                 </div>
                 <div style={{ color: 'rgba(232,184,48,0.55)', fontSize: 11, marginTop: 2, letterSpacing: '0.05em' }}>
@@ -1346,7 +909,7 @@ export default function Home() {
                 <button
                   onClick={() => goTo(galleryPage - 1)}
                   aria-label="Предишна снимка"
-                  style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(232,184,48,0.3)', background: 'rgba(6,7,10,0.55)', color: '#E8B830', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}
+                  style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(232,184,48,0.3)', background: 'rgba(6,7,10,0.55)', color: '#f4f0ec', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}
                 >
                   ‹
                 </button>
@@ -1372,7 +935,7 @@ export default function Home() {
                 <button
                   onClick={() => goTo(galleryPage + 1)}
                   aria-label="Следваща снимка"
-                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(232,184,48,0.3)', background: 'rgba(6,7,10,0.55)', color: '#E8B830', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}
+                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(232,184,48,0.3)', background: 'rgba(6,7,10,0.55)', color: '#f4f0ec', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}
                 >
                   ›
                 </button>
@@ -1393,7 +956,7 @@ export default function Home() {
                       border: 'none',
                       cursor: 'pointer',
                       transition: 'width 0.25s ease, background 0.25s ease',
-                      background: i === galleryPage ? '#E8B830' : 'rgba(232,184,48,0.28)'
+                      background: i === galleryPage ? '#f4f0ec' : 'rgba(232,184,48,0.28)'
                     }}
                   />
                 ))}
@@ -1403,39 +966,15 @@ export default function Home() {
         );
       })()}
 
-      {screen === 'login' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: bg }}>
-          <div style={{ fontSize: 18, fontWeight: 600, color: textMain, marginBottom: 4 }}>Вход в администрацията</div>
-          <div style={{ fontSize: 13, color: textSub, marginBottom: '1.5rem' }}>Въведете паролата за управление</div>
-
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && doLogin()}
-            placeholder="Парола"
-            style={{ width: '100%', maxWidth: 320, padding: '10px 14px', border: `0.5px solid ${border}`, borderRadius: 8, fontSize: 14, marginBottom: 10, outline: 'none', background: cardBg, color: textMain }}
-          />
-
-          <button onClick={doLogin} style={{ width: '100%', maxWidth: 320, padding: 11, background: '#12151A', color: '#E8B830', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            Влез
-          </button>
-
-          {loginError && <div style={{ color: '#E24B4A', fontSize: 12, marginTop: 8 }}>Грешна парола</div>}
-
-          <button onClick={() => setScreen('lot')} style={{ marginTop: '1rem', background: 'none', border: 'none', color: textSub, fontSize: 13, cursor: 'pointer' }}>
-            ← Назад към автомобилите
-          </button>
-        </div>
-      )}
+      {screen === 'login' && <main className="apex-login"><Mark/><form onSubmit={e => { e.preventDefault(); doLogin(); }}><h1>Добре дошъл.</h1><p>Вход в администрацията на APEX DRIVE BULGARIA.</p><label>Парола<input autoComplete="current-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label><button className="button primary" disabled={loginBusy}>{loginBusy ? 'Проверка…' : 'Влез в администрацията ↗'}</button>{loginError && <p role="alert">{loginError}</p>}<button type="button" className="text-button" onClick={() => setScreen('lot')}>← Назад към автомобилите</button></form></main>}
 
       {screen === 'admin' && adminLot && (
-        <div style={{ background: '#F5F6F7', minHeight: '100vh' }}>
-          <div style={{ background: '#12151A', color: '#E8B830', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="apex-admin" style={{ background: '#F5F6F7', minHeight: '100vh' }}>
+          <div style={{ background: '#12151A', color: '#f4f0ec', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
             <button onClick={() => setScreen('lot')} style={{ background: 'none', border: '0.5px solid rgba(232,184,48,0.35)', color: 'rgba(232,184,48,0.85)', padding: '5px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}>
               ← Автомобили
             </button>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>Управление на автокъщата</span>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>Управление на автокъщата</span><button className="text-button" onClick={logout}>Изход</button>
             <span style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(232,184,48,0.8)' }}>
               👁 Днес: {todayViews === null ? '…' : todayViews}
             </span>
@@ -1443,28 +982,28 @@ export default function Home() {
 
           <div style={{ padding: '1.25rem' }}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9A227', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a51c2b', marginBottom: 10 }}>
                 Автокъща
               </div>
 
               <input
                 value={adminLot.dealershipName}
                 onChange={e => setAdminLot({ ...adminLot, dealershipName: e.target.value })}
-                placeholder="Име на автокъщата"
+                placeholder="Име на автокъщата" aria-label="Име на автокъщата"
                 style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: 'white', outline: 'none', marginBottom: 8 }}
               />
 
               <input
                 value={adminLot.phone || ''}
                 onChange={e => setAdminLot({ ...adminLot, phone: e.target.value })}
-                placeholder="Телефон за връзка"
+                placeholder="Телефон за връзка" aria-label="Телефон за връзка"
                 style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: 'white', outline: 'none', marginBottom: 8 }}
               />
 
               <input
                 value={adminLot.footerNote}
                 onChange={e => setAdminLot({ ...adminLot, footerNote: e.target.value })}
-                placeholder="Бележка в долната част"
+                placeholder="Бележка в долната част" aria-label="Бележка в долната част"
                 style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: 'white', outline: 'none' }}
               />
 
@@ -1480,18 +1019,20 @@ export default function Home() {
               </label>
 
               <div style={{ marginTop: 10 }}>
-                <div style={{ fontSize: 11, color: '#C9A227', marginBottom: 6 }}>ФОН НА ХЕДЪРА (СНИМКА ИЛИ MP4)</div>
+                <div style={{ fontSize: 11, color: '#a51c2b', marginBottom: 6 }}>ФОН НА ХЕДЪРА (СНИМКА ИЛИ MP4)</div>
                 <ImageUploader value={adminLot.heroImage || ''} onChange={url => setAdminLot({ ...adminLot, heroImage: url })} allowVideo />
               </div>
 
+              <div className="admin-branding"><h2>Начален екран</h2><p>Вертикална фотография за началния екран. При празно поле се използва тъмният автомобил от избрания визуален пример.</p><ImageUploader value={adminLot.introImage || ''} onChange={url => setAdminLot({ ...adminLot, introImage: url })}/></div>
+              <div className="admin-branding"><h2>Лого и наследен банер</h2><p>Фонът по-горе има приоритет. Ако е празен, използваме съществуващия банер от настройките, а след него — снимка от селекцията.</p><ImageUploader value={adminLot.logoImage ?? branding.logoImage ?? ''} onChange={url => setAdminLot({ ...adminLot, logoImage: url })}/></div>
               <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 11, color: '#C9A227', marginBottom: 6 }}>ГАЛЕРИЯ НА АВТОКЪЩАТА — ДО 30 СНИМКИ</div>
+                <div style={{ fontSize: 11, color: '#a51c2b', marginBottom: 6 }}>ГАЛЕРИЯ НА АВТОКЪЩАТА — ДО 30 СНИМКИ</div>
                 <FullGalleryUploader value={adminLot.fullGalleryImages || []} onChange={imgs => setAdminLot({ ...adminLot, fullGalleryImages: imgs })} />
               </div>
             </div>
 
             <div style={{ marginBottom: '1.5rem', background: 'white', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 10, padding: '0.9rem 1rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9A227', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a51c2b', marginBottom: 10 }}>
                 Смяна на парола за админ
               </div>
 
@@ -1499,7 +1040,7 @@ export default function Home() {
                 type="password"
                 value={newPass1}
                 onChange={e => setNewPass1(e.target.value)}
-                placeholder="Нова парола"
+                placeholder="Нова парола" aria-label="Нова парола"
                 style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: '#F9FAFA', outline: 'none', marginBottom: 8 }}
               />
 
@@ -1507,7 +1048,7 @@ export default function Home() {
                 type="password"
                 value={newPass2}
                 onChange={e => setNewPass2(e.target.value)}
-                placeholder="Потвърди новата парола"
+                placeholder="Потвърди новата парола" aria-label="Потвърди новата парола"
                 style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: '#F9FAFA', outline: 'none', marginBottom: 8 }}
               />
 
@@ -1520,12 +1061,13 @@ export default function Home() {
               <button
                 onClick={changePassword}
                 disabled={passSaving}
-                style={{ background: '#12151A', color: '#E8B830', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, cursor: 'pointer', opacity: passSaving ? 0.6 : 1 }}
+                style={{ background: '#12151A', color: '#f4f0ec', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, cursor: 'pointer', opacity: passSaving ? 0.6 : 1 }}
               >
                 {passSaving ? 'Запис...' : 'Смени паролата'}
               </button>
             </div>
 
+            {adminLot.sections.length === 0 && <button className="button primary" onClick={() => addSectionAfter(-1)}>+ Първа категория</button>}
             {adminLot.sections.map((sec, si) => (
               <div key={si} style={{ marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -1533,9 +1075,9 @@ export default function Home() {
                     <SuggestInput
                       value={sec.label}
                       onChange={e => updateSectionLabel(si, e.target.value)}
-                      placeholder="Категория"
+                      placeholder="Категория" aria-label="Категория"
                       options={TECH_SUGGESTIONS.category}
-                      style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#C9A227', background: 'white' }}
+                      style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a51c2b', background: 'white' }}
                     />
                   </div>
 
@@ -1551,22 +1093,23 @@ export default function Home() {
                 {sec.cars.map((c, ci) => {
                   const accent = CAR_CARD_ACCENTS[ci % CAR_CARD_ACCENTS.length];
                   return (
-                  <div key={ci} style={{ background: accent.tint, border: '0.5px solid rgba(140,150,160,0.3)', borderLeft: `4px solid ${accent.border}`, borderRadius: 10, padding: '0.75rem 1rem', marginBottom: 8 }}>
+                  <div key={ci} className="admin-car" style={{ background: accent.tint, border: '0.5px solid rgba(140,150,160,0.3)', borderLeft: `4px solid ${accent.border}`, borderRadius: 10, padding: '0.75rem 1rem', marginBottom: 8 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.06em', color: accent.border, marginBottom: 6 }}>
                       КОЛА {ci + 1}{c.name ? ` · ${c.name}` : ''}
                     </div>
+                    <div className="admin-publication"><label><input type="checkbox" checked={c.visible !== false} onChange={e => updateCar(si, ci, 'visible', e.target.checked)}/>Публична обява</label><label><input type="checkbox" checked={!!c.featured} onChange={e => updateCar(si, ci, 'featured', e.target.checked)}/>Избран автомобил</label><button className="text-button" onClick={() => { setSelectedCar({ ...c, sectionLabel: sec.label }); setPreview(true); setScreen('car'); }}>Преглед ↗</button></div>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
                       <input
                         value={c.name}
                         onChange={e => updateCar(si, ci, 'name', e.target.value)}
-                        placeholder="Марка и модел"
+                        placeholder="Марка и модел" aria-label="Марка и модел"
                         style={{ flex: 1, padding: '6px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none' }}
                       />
 
                       <input
                         value={c.price}
                         onChange={e => updateCar(si, ci, 'price', e.target.value)}
-                        placeholder="Цена €"
+                        placeholder="Цена €" aria-label="Цена €"
                         style={{ width: 80, padding: '6px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none' }}
                       />
 
@@ -1578,26 +1121,26 @@ export default function Home() {
                     <input
                       value={c.desc}
                       onChange={e => updateCar(si, ci, 'desc', e.target.value)}
-                      placeholder="Описание (екстри, състояние)"
+                      placeholder="Описание (екстри, състояние)" aria-label="Описание (екстри, състояние)"
                       style={{ width: '100%', padding: '6px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none', marginBottom: 6, display: 'block' }}
                     />
 
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: '#7D6A20', margin: '8px 0 3px' }}>ТЕХНИЧЕСКИ ДАННИ</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: '#374151', margin: '8px 0 3px' }}>ТЕХНИЧЕСКИ ДАННИ</div>
                     <div style={{ fontSize: 10.5, color: '#7A8088', marginBottom: 7 }}>Натисни върху поле и избери от падащите предложения. Можеш и да въведеш собствена стойност.</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6, marginBottom: 8 }}>
-                      <SuggestInput value={c.productionDate || ''} onChange={e => updateCar(si, ci, 'productionDate', e.target.value)} placeholder="Дата на производство (напр. Май 2018)" options={TECH_SUGGESTIONS.productionDate} />
-                      <SuggestInput value={c.engine || ''} onChange={e => updateCar(si, ci, 'engine', e.target.value)} placeholder="Двигател" options={TECH_SUGGESTIONS.engine} />
-                      <SuggestInput value={c.power || ''} onChange={e => updateCar(si, ci, 'power', e.target.value)} placeholder="Мощност (напр. 265 к.с.)" options={TECH_SUGGESTIONS.power} />
-                      <SuggestInput value={c.euroStandard || ''} onChange={e => updateCar(si, ci, 'euroStandard', e.target.value)} placeholder="Евростандарт" options={TECH_SUGGESTIONS.euroStandard} />
-                      <SuggestInput value={c.displacement || ''} onChange={e => updateCar(si, ci, 'displacement', e.target.value)} placeholder="Кубатура" options={TECH_SUGGESTIONS.displacement} />
-                      <SuggestInput value={c.gearbox || ''} onChange={e => updateCar(si, ci, 'gearbox', e.target.value)} placeholder="Скоростна кутия" options={TECH_SUGGESTIONS.gearbox} />
-                      <SuggestInput value={c.year || ''} onChange={e => updateCar(si, ci, 'year', e.target.value)} placeholder="Година" options={TECH_SUGGESTIONS.year} />
-                      <SuggestInput value={c.mileage || ''} onChange={e => updateCar(si, ci, 'mileage', e.target.value)} placeholder="Пробег" options={TECH_SUGGESTIONS.mileage} />
-                      <SuggestInput value={c.fuel || ''} onChange={e => updateCar(si, ci, 'fuel', e.target.value)} placeholder="Гориво" options={TECH_SUGGESTIONS.fuel} />
-                      <SuggestInput value={c.color || ''} onChange={e => updateCar(si, ci, 'color', e.target.value)} placeholder="Цвят" options={TECH_SUGGESTIONS.color} />
+                      <SuggestInput value={c.productionDate || ''} onChange={e => updateCar(si, ci, 'productionDate', e.target.value)} placeholder="Дата на производство (напр. Май 2018)" aria-label="Дата на производство (напр. Май 2018)" options={TECH_SUGGESTIONS.productionDate} />
+                      <SuggestInput value={c.engine || ''} onChange={e => updateCar(si, ci, 'engine', e.target.value)} placeholder="Двигател" aria-label="Двигател" options={TECH_SUGGESTIONS.engine} />
+                      <SuggestInput value={c.power || ''} onChange={e => updateCar(si, ci, 'power', e.target.value)} placeholder="Мощност (напр. 265 к.с.)" aria-label="Мощност (напр. 265 к.с.)" options={TECH_SUGGESTIONS.power} />
+                      <SuggestInput value={c.euroStandard || ''} onChange={e => updateCar(si, ci, 'euroStandard', e.target.value)} placeholder="Евростандарт" aria-label="Евростандарт" options={TECH_SUGGESTIONS.euroStandard} />
+                      <SuggestInput value={c.displacement || ''} onChange={e => updateCar(si, ci, 'displacement', e.target.value)} placeholder="Кубатура" aria-label="Кубатура" options={TECH_SUGGESTIONS.displacement} />
+                      <SuggestInput value={c.gearbox || ''} onChange={e => updateCar(si, ci, 'gearbox', e.target.value)} placeholder="Скоростна кутия" aria-label="Скоростна кутия" options={TECH_SUGGESTIONS.gearbox} />
+                      <SuggestInput value={c.year || ''} onChange={e => updateCar(si, ci, 'year', e.target.value)} placeholder="Година" aria-label="Година" options={TECH_SUGGESTIONS.year} />
+                      <SuggestInput value={c.mileage || ''} onChange={e => updateCar(si, ci, 'mileage', e.target.value)} placeholder="Пробег" aria-label="Пробег" options={TECH_SUGGESTIONS.mileage} />
+                      <SuggestInput value={c.fuel || ''} onChange={e => updateCar(si, ci, 'fuel', e.target.value)} placeholder="Гориво" aria-label="Гориво" options={TECH_SUGGESTIONS.fuel} />
+                      <SuggestInput value={c.color || ''} onChange={e => updateCar(si, ci, 'color', e.target.value)} placeholder="Цвят" aria-label="Цвят" options={TECH_SUGGESTIONS.color} />
                     </div>
 
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: '#7D6A20', margin: '10px 0 6px' }}>ДОПЪЛНИТЕЛНА ИНФОРМАЦИЯ</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: '#374151', margin: '10px 0 6px' }}>ДОПЪЛНИТЕЛНА ИНФОРМАЦИЯ</div>
                     <textarea
                       value={c.additionalInfo || ''}
                       onChange={e => updateCar(si, ci, 'additionalInfo', e.target.value)}
@@ -1621,9 +1164,9 @@ export default function Home() {
                               fontSize: 10,
                               padding: '3px 9px',
                               borderRadius: 20,
-                              border: c.badges.includes(b) ? `0.5px solid ${bc[b].color}` : '0.5px solid rgba(140,150,160,0.3)',
-                              background: c.badges.includes(b) ? bc[b].bg : 'white',
-                              color: c.badges.includes(b) ? bc[b].color : '#5B6470',
+                              border: (c.badges || []).includes(b) ? `0.5px solid ${bc[b].color}` : '0.5px solid rgba(140,150,160,0.3)',
+                              background: (c.badges || []).includes(b) ? bc[b].bg : 'white',
+                              color: (c.badges || []).includes(b) ? bc[b].color : '#5B6470',
                               cursor: 'pointer'
                             }}
                           >
@@ -1639,14 +1182,14 @@ export default function Home() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     onClick={() => addCar(si)}
-                    style={{ flex: 1, padding: 8, border: '0.5px dashed rgba(140,150,160,0.4)', borderRadius: 8, background: 'transparent', color: '#C9A227', fontSize: 13, cursor: 'pointer' }}
+                    style={{ flex: 1, padding: 8, border: '0.5px dashed rgba(140,150,160,0.4)', borderRadius: 8, background: 'transparent', color: '#a51c2b', fontSize: 13, cursor: 'pointer' }}
                   >
                     + Нов автомобил
                   </button>
 
                   <button
                     onClick={() => openPicker(si)}
-                    style={{ flex: 1, padding: 8, border: '0.5px solid rgba(140,150,160,0.5)', borderRadius: 8, background: '#12151A', color: '#E8B830', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    style={{ flex: 1, padding: 8, border: '0.5px solid rgba(140,150,160,0.5)', borderRadius: 8, background: '#12151A', color: '#f4f0ec', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
                   >
                     📚 От каталога
                   </button>
@@ -1654,21 +1197,15 @@ export default function Home() {
 
                 <button
                   onClick={() => addSectionAfter(si)}
-                  style={{ width: '100%', marginTop: 8, padding: 7, border: '0.5px dashed rgba(140,150,160,0.4)', borderRadius: 8, background: 'transparent', color: '#C9A227', fontSize: 12, cursor: 'pointer' }}
+                  style={{ width: '100%', marginTop: 8, padding: 7, border: '0.5px dashed rgba(140,150,160,0.4)', borderRadius: 8, background: 'transparent', color: '#a51c2b', fontSize: 12, cursor: 'pointer' }}
                 >
                   + Нова категория след „{sec.label}“
                 </button>
               </div>
             ))}
 
-            <button
-              onClick={saveLot}
-              disabled={saving}
-              style={{ width: '100%', padding: 13, background: saving ? '#555' : '#12151A', color: '#E8B830', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, letterSpacing: '0.04em', marginTop: '0.5rem', cursor: saving ? 'default' : 'pointer' }}
-            >
-              {saving ? 'Записване...' : '💾 Запази автокъщата'}
-            </button>
           </div>
+          <div className="admin-savebar"><span role="status">{dirty ? 'Има незапазени промени' : 'Всички промени са запазени'}</span><button className="button primary" onClick={saveLot} disabled={saving || !dirty}>{saving ? 'Записване…' : 'Запази промените ↗'}</button></div>
         </div>
       )}
 
@@ -1676,7 +1213,7 @@ export default function Home() {
         <InstallBanner
           dark={dark}
           iosDevice={iosDevice}
-          dealershipName={lot.dealershipName}
+          dealershipName={BRAND}
           onInstall={handleInstallClick}
           onDismiss={dismissInstallBanner}
         />
@@ -1694,7 +1231,7 @@ export default function Home() {
       )}
 
       {toast && (
-        <div style={{ position: 'fixed', bottom: '1rem', left: '50%', transform: 'translateX(-50%)', background: '#12151A', color: '#E8B830', padding: '10px 20px', borderRadius: 8, fontSize: 13, zIndex: 99, whiteSpace: 'nowrap', animation: 'fadeUp 0.3s ease' }}>
+        <div className="toast" role="status">
           {toast}
         </div>
       )}
