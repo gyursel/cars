@@ -567,6 +567,8 @@ export default function Home() {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
+  const navLockUntil = useRef(0);
+
   useEffect(() => {
     if (screen !== 'lot') return;
 
@@ -574,7 +576,7 @@ export default function Home() {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActiveNav(visible.target.id === 'inventory' ? 'inventory' : visible.target.id);
+        if (visible && Date.now() > navLockUntil.current) setActiveNav(visible.target.id);
       },
       { rootMargin: '-40% 0px -50% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
@@ -582,13 +584,14 @@ export default function Home() {
     const els = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
     els.forEach(el => observer.observe(el));
 
-    function onScroll() { if (window.scrollY < 120) setActiveNav('home'); }
+    function onScroll() { if (Date.now() > navLockUntil.current && window.scrollY < 120) setActiveNav('home'); }
     window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => { observer.disconnect(); window.removeEventListener('scroll', onScroll); };
   }, [screen, lot]);
 
   function handleNavigate(item) {
+    navLockUntil.current = Date.now() + 950;
     if (screen !== 'lot') { setScreen('lot'); setSelectedCar(null); }
     setActiveNav(item.key);
 
