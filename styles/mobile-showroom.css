@@ -33,3 +33,17 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 @keyframes gallery-enter{from{opacity:0}to{opacity:1}}
 .detail-main-photo{touch-action:pan-y}.apex-lightbox>.gallery-image{height:100%}
 @media(prefers-reduced-motion:reduce){.apex-detail,.collection-screen,.gallery-image-frame{animation:none}}
+
+/* PM Select original logo: correct the undersized hero branding on mobile. */
+.intro-brand{width:min(58vw,270px);height:74px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.intro-brand .apex-logo-image{width:100%;height:100%;max-height:none;object-fit:cover;object-position:center;display:block}
+@media(min-width:768px){.intro-brand{width:300px;height:82px}}
+
+/* Cinematic, non-interactive navigation dim / brighten transition. */
+.pmselect-transition-veil{position:fixed;inset:0;z-index:120;pointer-events:none;background:#050507;opacity:0;animation:pmselect-scene-breathe 520ms ease-in-out both}
+@keyframes pmselect-scene-breathe{0%{opacity:0}43%{opacity:.28}100%{opacity:0}}
+/* Animated horizontal light sweep on the collection divider. */
+.collection-ribbon{position:relative;isolation:isolate}
+.collection-ribbon::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent 0%,transparent 20%,#f0444f 50%,transparent 80%,transparent 100%);transform:translateX(-100%);animation:pmselect-line-sweep 7s linear infinite;opacity:.85}
+@keyframes pmselect-line-sweep{to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.pmselect-transition-veil{display:none}.collection-ribbon::after{animation:none;transform:none;opacity:.2}}
