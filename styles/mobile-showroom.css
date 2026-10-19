@@ -124,3 +124,27 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 @keyframes panel-arrive{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(max-width:380px){.hero-editorial h1{font-size:32px}.spotlight-copy h2{font-size:27px}.category-tabs button{font-size:12px}.mode-search .car-photo{flex-basis:82px;width:82px}.apex-bottom-nav button{padding-inline:8px}}
 @media(prefers-reduced-motion:reduce){.pmselect-transition-veil{display:none}.ribbon-track{animation:none}.hero-media{transform:none}.apex-car,.detail-panel{animation:none}}
+/* Full-bleed detail image and overlay controls follow the reference gallery. */
+.apex-detail{position:relative}
+.detail-header{position:absolute;top:18px;left:20px;right:20px;height:42px;padding:0;background:none;border:0;backdrop-filter:none}
+.detail-header .text-button{background:#101014e8;border:1px solid #ffffff12;border-radius:12px;padding:12px;font-size:11px;backdrop-filter:blur(12px)}
+.detail-header>span:last-child{background:#101014dc;padding:12px 18px;border-radius:12px;font:600 14px var(--serif);color:#ddd}
+.detail-gallery{padding:0}
+.detail-main-photo{padding-top:0;aspect-ratio:1.25}
+.detail-main-photo .photo-expand{border-radius:0;background:#0a0a0d}
+.photo-expand img{object-fit:cover}
+.detail-thumbnails{padding:0 20px 7px;margin-top:-35px;position:relative;z-index:2;gap:10px}
+.detail-thumbnails button{width:78px;height:55px;border-radius:10px;border:2px solid transparent;opacity:.55;transition:opacity .3s,border-color .3s}
+.detail-thumbnails button[aria-pressed=true]{opacity:1;border-color:#ef3944}
+.photo-controls{bottom:45px}.photo-counter{bottom:45px}
+.detail-tabs{padding:6px;border:1px solid #ffffff10;background:#0e0e13;border-radius:18px}
+.detail-tabs button{background:none;border:0;border-radius:13px;font-size:11px}
+.detail-highlights{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.detail-highlights>div{padding:14px 6px;text-align:center;border-radius:17px}
+.detail-highlights span{font-size:9px}.detail-highlights strong{font:600 11px/1.5 var(--sans);overflow-wrap:anywhere}
+.detail-action{border-radius:24px 24px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom))}
+@media(max-width:380px){.detail-info h1{font-size:27px}.detail-thumbnails button{width:68px}.detail-highlights{gap:5px}.detail-highlights span{font-size:8px}}
+/* Never animate transforms on ancestors of fixed navigation/action bars. */
+.collection-screen:not([hidden]),.apex-detail{animation:screen-opacity .45s ease-out both}
+@keyframes screen-opacity{from{opacity:.2}to{opacity:1}}
+.spotlight-copy h2 button{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}

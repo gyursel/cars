@@ -45,3 +45,14 @@ Inspect reference computed styles and interactions, then implement coordinated n
 - Draft PR: https://github.com/gyursel/cars/pull/8
 - Vercel connector returns 403 for gyursels-projects; CLI unavailable. Use Git integration preview, do not alter permissions.
 - Next: mobile preview visual/functional test, refine observed discrepancies.
+
+## Mobile inspection / second checkpoint
+- Confirmed original logo and Playfair font render in the deployed preview at 390×844.
+- Confirmed 16 real vehicles render and search produces the expected empty state.
+- Found fixed nav outside viewport (top 2407px) because the previous screen transform animation retained an identity matrix. Removed ancestor transform animation; use opacity only.
+- Reference detail has full-width imagery and overlay controls; matched layout while keeping gallery, tabs and phone actions.
+- Display-only vehicle title cleanup removes imported finance/listing suffix; full original title remains in tooltip/accessibility/admin. No data writes.
+- Reference fallback spotlight uses BMW M5 when no explicit featured record exists; explicit admin featured selection still takes precedence.
+- Last remote implementation commit: f051308e3b8eb2072c0aa97cebdefe159eb63411.
+- Four auth/source-fetch unit tests PASS. Build PASS before second checkpoint.
+- Next: verify corrected nav, gallery, filters, favourites, contact and admin login; save evidence.
