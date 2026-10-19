@@ -1,3 +1,4 @@
+import useShowroomNavigation from '../lib/useShowroomNavigation';
 import { useState, useEffect, useRef, useId } from 'react';
 import Head from 'next/head';
 import { BRAND, Mark, Showroom, CarDetail, ShowroomSkeleton } from '../components/Showroom';
@@ -449,7 +450,7 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
 export default function Home() {
   const [lot, setLot] = useState(null);
   const [screen, setScreen] = useState('lot');
-  const [activeNav, setActiveNav] = useState('home');
+  const [activeNav, handleNavigate] = useShowroomNavigation(screen, lot);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
   const [toast, setToast] = useState('');
@@ -566,44 +567,6 @@ export default function Home() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
-
-  const navLockUntil = useRef(0);
-
-  useEffect(() => {
-    if (screen !== 'lot') return;
-
-    const sectionIds = ['inventory', 'services', 'contact'];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible && Date.now() > navLockUntil.current) setActiveNav(visible.target.id);
-      },
-      { rootMargin: '-40% 0px -50% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    const els = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
-    els.forEach(el => observer.observe(el));
-
-    function onScroll() { if (Date.now() > navLockUntil.current && window.scrollY < 120) setActiveNav('home'); }
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    return () => { observer.disconnect(); window.removeEventListener('scroll', onScroll); };
-  }, [screen, lot]);
-
-  function handleNavigate(item) {
-    navLockUntil.current = Date.now() + 950;
-    if (screen !== 'lot') { setScreen('lot'); setSelectedCar(null); }
-    setActiveNav(item.key);
-
-    const scrollToTarget = () => {
-      if (!item.target) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-      const el = document.getElementById(item.target);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
-    if (screen !== 'lot') setTimeout(scrollToTarget, 60);
-    else scrollToTarget();
-  }
 
   async function handleInstallClick() {
     if (!installPromptEvent) return;
@@ -867,7 +830,7 @@ export default function Home() {
       </Head>
 
       {lot && <div hidden={screen !== 'lot'}><Showroom lot={lot} branding={branding} error={loadError} activeNav={activeNav} onNavigate={handleNavigate} onAdmin={() => { setPassword(''); setLoginError(false); setScreen(adminLot ? 'admin' : 'login'); }} onGallery={() => { setGalleryPage(0); setScreen('gallery'); }} onOpen={car => { setSelectedCar(car); setPreview(false); setScreen('car'); }} /></div>}
-      {screen === 'car' && selectedCar && <CarDetail key={selectedCar.listKey || selectedCar.name} car={selectedCar} phone={preview ? adminLot?.phone : lot?.phone} preview={preview} onBack={() => { setScreen(preview ? 'admin' : 'lot'); if (!preview) setTimeout(() => document.getElementById('inventory')?.scrollIntoView(), 30); }} />}
+      {screen === 'car' && selectedCar && <CarDetail key={selectedCar.listKey || selectedCar.name} car={selectedCar} phone={preview ? adminLot?.phone : lot?.phone} preview={preview} onBack={() => { setScreen(preview ? 'admin' : 'lot'); if (!preview) requestAnimationFrame(() => document.getElementById('inventory')?.scrollIntoView({ behavior: 'instant' })); }} />}
 
       {screen === 'gallery' && lot && (() => {
         const pages = lot.fullGalleryImages || [];
