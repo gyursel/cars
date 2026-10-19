@@ -2,6 +2,8 @@
 
 Source: `branding/pmselect-cars` at `b043976`. Changes are on a separate branch; PR #2 remains untouched. This is a reviewable development change, not approval for production deployment.
 
+See [the follow-up media investigation](MEDIA-PERFORMANCE.md) for measured original-image sizes and the subsequent image-delivery fix.
+
 ## Findings and fixes
 
 - Navigation previously combined two local Boolean modes with parent section state. Recent commits made the class conditions exclusive, but did not remove competing owners. The observer selected from only its latest callback entries and used a fixed 950 ms wall-clock lock. `useShowroomNavigation` now owns one mode. Search and favorites are derived from it. A single animation-frame scroll measurement synchronizes sections; a requested target remains authoritative until reached or interrupted by wheel, touch movement, or keyboard scrolling. Pending navigation frames are cancelled on a subsequent selection and on cleanup. No observer or navigation timeout remains.

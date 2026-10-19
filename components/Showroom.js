@@ -1,3 +1,4 @@
+import { vehicleImageSource, decodeVehicleImage } from '../lib/vehicleMedia';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const BRAND = 'PMSELECT CARS';
@@ -7,6 +8,12 @@ export const priceOf = value => value !== '' && value != null && Number.isFinite
 const badges = { new: 'Ново постъпление', leasing: 'Лизинг / Бартер', warranty: 'Гаранция', '4x4': '4 × 4' };
 
 export function Mark({ logo }) { return <img className="apex-logo-image" src={logo || '/pmselect-logo.png'} alt={BRAND} decoding="async"/>; }
+
+function VehicleImage({ src, width, ...props }) {
+  const [fallback, setFallback] = useState(null);
+  const optimized = vehicleImageSource(src, width);
+  return <img {...props} src={fallback === optimized ? src : optimized} onError={() => setFallback(optimized)}/>;
+}
 
 function Icon({ name }) {
   const paths = { home: 'M3 11 12 3l9 8M5 10v11h5v-7h4v7h5V10', inventory: 'M3 17V9l3-5h12l3 5v8M3 10h18M6 14h2m8 0h2M5 17v3m14-3v3', contact: 'M5 3h4l2 5-3 2a16 16 0 0 0 6 6l2-3 5 2v4c-9 3-21-9-16-16Z', services: 'M12 3 3 8l9 13 9-13-9-5ZM3 8h18M8 8l4 13 4-13' };
@@ -60,7 +67,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
     {entered && <div className="collection-screen">
     <header className="apex-header"><button className="square-button" aria-label="Меню" aria-expanded={menuOpen} aria-controls="collection-menu" onClick={() => setMenuOpen(!menuOpen)}>☰</button><button className="brand-button" onClick={() => { setEntered(false); window.scrollTo(0,0); }} aria-label="Към началния екран"><Icon name="home"/></button>{lot.phone ? <a className="square-button call-button" href={`tel:${lot.phone.replace(/\s/g,'')}`} aria-label="Обади се"><Icon name="contact"/></a> : <button className="square-button" onClick={onAdmin} aria-label="Администрация">↗</button>}</header>
     {menuOpen && <nav id="collection-menu" className="collection-menu" aria-label="Меню">{navigation.map(([key,label]) => <button key={key} onClick={() => navigate(key)}>{label}<span>↗</span></button>)}<button onClick={() => { setMenuOpen(false); onAdmin(); }}>Администрация<span>↗</span></button></nav>}
-    {featured && !onlySaved && <section className="spotlight" aria-label="Избран автомобил"><div className="spotlight-visual"><button onClick={() => onOpen(featured)} aria-label={`Разгледай ${featured.name}`}><img src={imagesOf(featured)[0]} alt={featured.name} fetchPriority="high"/><span className="spotlight-fade"/></button></div><div className="spotlight-copy"><p className="eyebrow">PMSELECT / SELECTED</p><h2><button onClick={() => onOpen(featured)}>{featured.name}</button></h2>{featured.desc && <p className="spotlight-description">{featured.desc}</p>}<p className="spotlight-price">{priceOf(featured.price)}</p><div className="detail-badges">{(featured.badges || []).map(b => <span key={b}>{badges[b] || b}</span>)}</div></div></section>}
+    {featured && !onlySaved && <section className="spotlight" aria-label="Избран автомобил"><div className="spotlight-visual"><button onClick={() => onOpen(featured)} aria-label={`Разгледай ${featured.name}`}><VehicleImage src={imagesOf(featured)[0]} width={960} alt={featured.name} fetchPriority="high" decoding="async"/><span className="spotlight-fade"/></button></div><div className="spotlight-copy"><p className="eyebrow">PMSELECT / SELECTED</p><h2><button onClick={() => onOpen(featured)}>{featured.name}</button></h2>{featured.desc && <p className="spotlight-description">{featured.desc}</p>}<p className="spotlight-price">{priceOf(featured.price)}</p><div className="detail-badges">{(featured.badges || []).map(b => <span key={b}>{badges[b] || b}</span>)}</div></div></section>}
     <div className="collection-ribbon" aria-label="PMSELECT CARS — оглед и тест драйв"><span>PMSELECT CARS</span><i/><span>ТЕСТ ДРАЙВ</span><i/><span>ОГЛЕД НА МЯСТО</span></div>
     {lot.demoExpired ? <div className="apex-empty" role="status">Пробният период е приключил — това е демо версия на приложението.</div> : <>
     <main id="inventory" className="apex-inventory">
@@ -70,7 +77,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
       <div hidden={!searchOpen} className="search-panel"><div className="filter-toolbar"><label className="search-field"><span aria-hidden="true">⌕</span><input aria-label="Търси марка или модел" placeholder="Марка, модел или ключова дума" value={query} onChange={e => setQuery(e.target.value)}/>{query && <button aria-label="Изчисти търсенето" onClick={() => setQuery('')}>×</button>}</label><label className="sort-field"><span>Подреди по</span><select value={sort} onChange={e => setSort(e.target.value)}><option value="featured">Препоръчани</option><option value="price-up">Цена: възходящо</option><option value="price-down">Цена: низходящо</option><option value="year">Най-нови години</option></select></label></div>
       <details className="advanced-filters"><summary>Филтри <span>Гориво, цена, година и още +</span></summary><div className="filter-grid"><label>Гориво<select value={fuel} onChange={e => setFuel(e.target.value)}><option value="">Всички</option>{[...new Set(cars.map(c => c.fuel).filter(Boolean))].map(v => <option key={v}>{v}</option>)}</select></label><label>Скоростна кутия<select value={gearbox} onChange={e => setGearbox(e.target.value)}><option value="">Всички</option>{[...new Set(cars.map(c => c.gearbox).filter(Boolean))].map(v => <option key={v}>{v}</option>)}</select></label><label>Цена до (€)<input type="number" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Без ограничение"/></label><label>Година от<input type="number" min="1900" max="2100" value={minYear} onChange={e => setMinYear(e.target.value)} placeholder="Всички години"/></label><label>Пробег до (км)<input type="number" min="0" value={maxMileage} onChange={e => setMaxMileage(e.target.value)} placeholder="Без ограничение"/></label><button className="text-button" onClick={reset}>Изчисти филтрите ↺</button></div></details>
       </div><div className="results-label" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'автомобил' : 'автомобила'}</div>
-      <div className="apex-grid">{filtered.map((car, i) => <article className="apex-car" key={car.listKey} style={{ '--delay': `${Math.min(i, 5) * 45}ms` }}><button className="car-link" onClick={() => onOpen(car)} aria-label={`Разгледай ${car.name}`}><div className="car-photo">{imagesOf(car)[0] ? <img src={imagesOf(car)[0]} alt={car.name} loading="lazy" decoding="async" fetchPriority="low"/> : <div className="photo-missing">Снимките предстоят</div>}</div><div className="car-copy"><h3>{car.name}</h3><p className="car-spec-line">{[car.year || car.productionDate, car.fuel].filter(Boolean).join(' • ')}</p><div className="car-bottom"><strong>{priceOf(car.price)}</strong><span className="car-arrow" aria-hidden="true">↗</span></div></div></button><button className="save-car" aria-label={`${saved.includes(carKey(car)) ? 'Премахни от' : 'Добави в'} любими: ${car.name}`} aria-pressed={saved.includes(carKey(car))} onClick={() => toggleSaved(car)}>{saved.includes(carKey(car)) ? '♥' : '♡'}</button>{car.featured && <span className="car-badge">Избран</span>}</article>)}</div>
+      <div className="apex-grid">{filtered.map((car, i) => <article className="apex-car" key={car.listKey} style={{ '--delay': `${Math.min(i, 5) * 45}ms` }}><button className="car-link" onClick={() => onOpen(car)} aria-label={`Разгледай ${car.name}`}><div className="car-photo">{imagesOf(car)[0] ? <VehicleImage src={imagesOf(car)[0]} width={480} alt={car.name} loading="lazy" decoding="async"/> : <div className="photo-missing">Снимките предстоят</div>}</div><div className="car-copy"><h3>{car.name}</h3><p className="car-spec-line">{[car.year || car.productionDate, car.fuel].filter(Boolean).join(' • ')}</p><div className="car-bottom"><strong>{priceOf(car.price)}</strong><span className="car-arrow" aria-hidden="true">↗</span></div></div></button><button className="save-car" aria-label={`${saved.includes(carKey(car)) ? 'Премахни от' : 'Добави в'} любими: ${car.name}`} aria-pressed={saved.includes(carKey(car))} onClick={() => toggleSaved(car)}>{saved.includes(carKey(car)) ? '♥' : '♡'}</button>{car.featured && <span className="car-badge">Избран</span>}</article>)}</div>
       {!filtered.length && <div className="apex-empty"><h3>{onlySaved ? 'Все още няма любими' : cars.length ? 'Няма съвпадения' : 'Селекцията се подготвя'}</h3><p>{cars.length ? 'Промени филтрите, за да разгледаш други автомобили.' : 'Свържи се с нас за актуални предложения.'}</p>{cars.length > 0 && <button className="button secondary" onClick={reset}>Изчисти филтрите</button>}</div>}
       </>}
     </main>
@@ -88,23 +95,21 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
 }
 
 
-function GalleryImage({ src, alt }) {
-  const [display, setDisplay] = useState({ src, previous: null });
+function GalleryImage({ src, alt, width = 960 }) {
+  const optimized = vehicleImageSource(src, width);
+  const [display, setDisplay] = useState({ src: optimized, previous: null });
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let cancelled = false;
     setFailed(false);
-    if (src === display.src) return;
-    const image = new Image();
-    image.src = src;
-    image.decode().then(() => {
-      if (!cancelled) setDisplay(previous => ({ src, previous: previous.src }));
+    decodeVehicleImage(src, width).then(decoded => {
+      if (!cancelled) setDisplay(previous => previous.src === decoded ? previous : { src: decoded, previous: previous.src });
     }).catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
-  }, [src, display.src]);
+  }, [src, width]);
   return <span className="gallery-image">
     {display.previous && <img src={display.previous} alt="" aria-hidden="true"/>}
-    <img key={display.src} src={display.src} alt={alt} decoding="async" className="gallery-current" onLoad={() => { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setDisplay(value => value.previous ? { ...value, previous: null } : value); }} onError={() => setFailed(true)} onAnimationEnd={() => setDisplay(value => ({ ...value, previous: null }))}/>
+    <img key={display.src} src={display.src} alt={alt} decoding="async" className="gallery-current" onLoad={() => { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setDisplay(value => value.previous ? { ...value, previous: null } : value); }} onError={() => { if (display.src !== src) setDisplay(previous => ({ src, previous: previous.previous })); else setFailed(true); }} onAnimationEnd={() => setDisplay(value => ({ ...value, previous: null }))}/>
     {failed && <span className="gallery-error" role="status">Снимката не е достъпна. Избери друга.</span>}
   </span>;
 }
@@ -120,7 +125,7 @@ export function CarDetail({ car, phone, onBack, preview = false }) {
   useEffect(() => {
     if (photos.length < 2) return;
     const adjacent = [photos[(current + 1) % photos.length], photos[(current + photos.length - 1) % photos.length]];
-    adjacent.forEach(src => { const image = new Image(); image.src = src; image.decode().catch(() => {}); });
+    adjacent.forEach(src => { decodeVehicleImage(src, 960).catch(() => {}); });
   }, [current, photos]);
   const go = n => { if (photos.length > 1) setCurrent((n + photos.length) % photos.length); };
   useEffect(() => {
@@ -134,12 +139,12 @@ export function CarDetail({ car, phone, onBack, preview = false }) {
   const swipe = { onTouchStart: e => { touch.current = e.touches[0].clientX; }, onTouchEnd: e => { if (touch.current !== null && photos.length > 1) { const delta = e.changedTouches[0].clientX - touch.current; if (Math.abs(delta) > 45) go(current + (delta < 0 ? 1 : -1)); } touch.current = null; } };
   return <main className="apex-detail">
     <header className="detail-header"><button className="text-button" onClick={onBack}>← {preview ? 'Към редактора' : 'Към колекцията'}</button><span>{preview ? 'ПРЕГЛЕД' : 'ДЕТАЙЛИ'}</span></header>
-    <div className="detail-layout"><section className="detail-gallery" aria-label="Снимки на автомобила"><div className="detail-main-photo" {...swipe}>{photos.length ? <><button ref={launch} className="photo-expand" onClick={() => setFullscreen(true)} aria-label="Отвори снимката на цял екран"><GalleryImage src={photos[current]} alt={`${car.name}, снимка ${current + 1}`}/></button><span className="photo-counter">{String(current + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span>{photos.length > 1 && <div className="photo-controls"><button onClick={() => go(current - 1)} aria-label="Предишна снимка">←</button><button onClick={() => go(current + 1)} aria-label="Следваща снимка">→</button></div>}</> : <div className="photo-missing">Няма качени снимки</div>}</div><div className="detail-thumbnails">{photos.map((url, i) => <button key={url + i} onClick={() => setCurrent(i)} aria-label={`Снимка ${i + 1}`} aria-pressed={i === current}><img src={url} alt="" loading="lazy"/></button>)}</div></section>
+    <div className="detail-layout"><section className="detail-gallery" aria-label="Снимки на автомобила"><div className="detail-main-photo" {...swipe}>{photos.length ? <><button ref={launch} className="photo-expand" onClick={() => setFullscreen(true)} aria-label="Отвори снимката на цял екран"><GalleryImage src={photos[current]} alt={`${car.name}, снимка ${current + 1}`}/></button><span className="photo-counter">{String(current + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span>{photos.length > 1 && <div className="photo-controls"><button onClick={() => go(current - 1)} aria-label="Предишна снимка">←</button><button onClick={() => go(current + 1)} aria-label="Следваща снимка">→</button></div>}</> : <div className="photo-missing">Няма качени снимки</div>}</div><div className="detail-thumbnails">{photos.map((url, i) => <button key={url + i} onClick={() => setCurrent(i)} aria-label={`Снимка ${i + 1}`} aria-pressed={i === current}><VehicleImage src={url} width={160} alt="" loading="lazy" decoding="async"/></button>)}</div></section>
     <section className="detail-info"><p className="eyebrow">{car.sectionLabel || 'PMSELECT CARS / СЕЛЕКЦИЯТА'}</p><h1>{car.name}</h1><p className="detail-price">{priceOf(car.price)}</p><div className="detail-badges">{(car.badges || []).map(b => <span key={b}>{badges[b] || b}</span>)}</div>
     <div className="detail-tabs" role="tablist" aria-label="Информация за автомобила">{[['overview', 'Преглед'], ['specs', 'Характеристики'], ['description', 'Описание']].map(([key, label], i, tabs) => <button key={key} role="tab" id={`tab-${key}`} aria-controls={`panel-${key}`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setTab(key)} onKeyDown={e => { if (['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) { e.preventDefault(); const n = e.key === 'Home' ? 0 : e.key === 'End' ? 2 : (i + (e.key === 'ArrowRight' ? 1 : 2)) % 3; setTab(tabs[n][0]); document.getElementById(`tab-${tabs[n][0]}`)?.focus(); } }}>{label}</button>)}</div>
     <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="detail-panel">{tab === 'overview' ? <><div className="detail-highlights">{rows.slice(0, 3).map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div><h2>Описание</h2><p>{car.desc || 'Свържи се с нас за повече информация за автомобила.'}</p></> : tab === 'specs' ? <dl className="specification-list">{rows.length ? rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>) : <p>Характеристиките предстои да бъдат добавени.</p>}</dl> : <p className="preserve-lines">{car.additionalInfo || car.desc || 'Няма добавено описание.'}</p>}</div>
     {phone && <div className="detail-action"><span>Уговори своя оглед<small>{phone}</small></span><a className="button primary" href={`tel:${phone.replace(/\s/g, '')}`}>Обади се ↗</a></div>}</section></div>
-    {fullscreen && <dialog ref={dialog} className="apex-lightbox" onCancel={e => { e.preventDefault(); setFullscreen(false); }} onKeyDown={e => { if (e.key === 'ArrowLeft') go(current - 1); if (e.key === 'ArrowRight') go(current + 1); }} aria-label={`Галерия — ${car.name}`}><button className="lightbox-close" autoFocus onClick={() => setFullscreen(false)} aria-label="Затвори галерията">×</button><div {...swipe}><GalleryImage src={photos[current]} alt={`${car.name}, снимка ${current + 1}`}/></div><div className="lightbox-controls"><button onClick={() => go(current - 1)} disabled={photos.length < 2} aria-label="Предишна снимка">←</button><span>{current + 1} / {photos.length}</span><button onClick={() => go(current + 1)} disabled={photos.length < 2} aria-label="Следваща снимка">→</button></div></dialog>}
+    {fullscreen && <dialog ref={dialog} className="apex-lightbox" onCancel={e => { e.preventDefault(); setFullscreen(false); }} onKeyDown={e => { if (e.key === 'ArrowLeft') go(current - 1); if (e.key === 'ArrowRight') go(current + 1); }} aria-label={`Галерия — ${car.name}`}><button className="lightbox-close" autoFocus onClick={() => setFullscreen(false)} aria-label="Затвори галерията">×</button><div {...swipe}><GalleryImage src={photos[current]} width={1920} alt={`${car.name}, снимка ${current + 1}`}/></div><div className="lightbox-controls"><button onClick={() => go(current - 1)} disabled={photos.length < 2} aria-label="Предишна снимка">←</button><span>{current + 1} / {photos.length}</span><button onClick={() => go(current + 1)} disabled={photos.length < 2} aria-label="Следваща снимка">→</button></div></dialog>}
   </main>;
 }
 
