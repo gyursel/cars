@@ -15,3 +15,11 @@
 /* PMSELECT typography: coherent, legible Latin/Cyrillic lettering. */
 .hero-editorial h1,.section-heading h2,.apex-contact h2,.car-copy h3,.detail-title,.spotlight-copy h2{font-family:var(--sans);font-weight:600;letter-spacing:-.035em}
 .apex-admin,.apex-login,.apex-detail{font-family:var(--sans)}
+
+/* Uniform car typography across desktop, tablet and mobile. */
+.apex-grid .car-copy h3{font-family:var(--sans);font-size:clamp(18px,1.7vw,24px);font-weight:700;line-height:1.32;letter-spacing:-.025em;min-height:2.64em;max-height:2.64em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.apex-grid .car-spec-line{font-family:var(--sans);font-size:12px;line-height:1.5;min-height:1.5em}
+.apex-grid .car-bottom strong{font-family:var(--sans);font-size:clamp(14px,1.3vw,17px);font-weight:700}
+.apex-detail{animation:pmselect-detail-enter .24s ease-out both}
+@keyframes pmselect-detail-enter{from{opacity:.35}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.apex-detail{animation:none}}
