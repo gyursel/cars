@@ -9,7 +9,7 @@ export const imagesOf = car => [...new Set([car?.image, ...(car?.images || [])].
 export const numeric = value => Number(String(value ?? '').replace(/[^\d.,]/g, '').replace(',', '.'));
 export const priceOf = value => value !== '' && value != null && Number.isFinite(numeric(value)) && numeric(value) > 0 ? `${numeric(value).toLocaleString('bg-BG')} €` : 'Цена при запитване';
 // Display-only cleanup: stored/imported titles stay intact in admin and tooltips.
-export const displayName = car => (car?.name || '').replace(/\s*(?:лизинг|обява\s*:).*$/iu, '').trim() || car?.name || '';
+export const displayName = car => (car?.name || '').replace(/\s*(?:лизинг|обява\s*:).*$/iu, '').replace(/[,\s/]+$/, '').trim() || car?.name || '';
 const badges = { new: 'Ново постъпление', leasing: 'Лизинг / Бартер', warranty: 'Гаранция', '4x4': '4 × 4' };
 
 export function Mark({ logo = "/pmselect-original.png" }) { return <span className="pm-logo-crop"><img className="apex-logo-image" src={logo} alt="PM Select Automotive" decoding="async"/></span>; }
@@ -23,7 +23,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   const [query, setQuery] = useState('');
   const [entered, setEntered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { pulse: transitionPulse, transition } = useSceneTransition();
+  const { transition } = useSceneTransition();
   const [requestedItem, setRequestedItem] = useState(null);
   const { activeItem, mode, navigate: selectNavigation } = useShowroomNavigation(entered && visible);
   const searchOpen = mode === 'search';
@@ -56,12 +56,11 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
   // Use the approved PM Select artwork, not the legacy Firestore logo URL.
   const logo = '/pmselect-original.png';
   const video = hero && /\.(mp4|webm|mov)(\?|$)/i.test(hero);
-  const navigate = key => { setRequestedItem(key); setMenuOpen(false); transition(() => { selectNavigation(key); setRequestedItem(null); }); };
+  const navigate = key => { setRequestedItem(['search', 'saved', 'contact'].includes(key) ? key : 'home'); setMenuOpen(false); transition(() => { selectNavigation(key); setRequestedItem(null); }); };
   const openCar = car => transition(() => onOpen(car));
   const selectedItem = requestedItem || activeItem;
   const reset = () => { setQuery(''); setCategory('all'); setFuel(''); setGearbox(''); setMaxPrice(''); setMinYear(''); setMaxMileage(''); if (onlySaved) selectNavigation('home'); };
   return <div className={`apex-site ${entered ? 'is-entered' : 'is-intro'} mode-${mode}`}>
-    {transitionPulse > 0 && <div key={transitionPulse} className="pmselect-transition-veil" aria-hidden="true"/>}
     <a className="skip-link" href="#inventory">Към автомобилите</a>
     {!entered && <section className={`apex-hero ${hero ? '' : 'no-photo'}`} aria-label="PMSELECT CARS">
       <div className="intro-brand"><Mark logo={logo}/></div>
@@ -101,6 +100,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, visible = 
 }
 
 export function CarDetail({ car, phone, onBack, preview = false }) {
+  const { transition } = useSceneTransition();
   const [current, setCurrent] = useState(0);
   const [tab, setTab] = useState('overview');
   const [fullscreen, setFullscreen] = useState(false);
@@ -124,7 +124,7 @@ export function CarDetail({ car, phone, onBack, preview = false }) {
   const rows = [['Мощност', car.power], ['Производство', car.productionDate || car.year], ['Пробег', car.mileage], ['Двигател', car.engine || car.fuel], ['Скоростна кутия', car.gearbox], ['Евростандарт', car.euroStandard], ['Кубатура', car.displacement], ['Цвят', car.color]] .filter(([, value]) => value);
   const swipe = { onTouchStart: e => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, onTouchCancel: () => { touch.current = null; }, onTouchEnd: e => { if (touch.current !== null && photos.length > 1) { const delta = e.changedTouches[0].clientX - touch.current.x; const vertical = e.changedTouches[0].clientY - touch.current.y; if (Math.abs(delta) > 45 && Math.abs(delta) > Math.abs(vertical)) go(current + (delta < 0 ? 1 : -1)); } touch.current = null; } };
   return <main className="apex-detail">
-    <header className="detail-header"><button className="text-button" onClick={onBack}>← {preview ? 'Към редактора' : 'Към колекцията'}</button><span>{preview ? 'ПРЕГЛЕД' : 'ДЕТАЙЛИ'}</span></header>
+    <header className="detail-header"><button className="text-button" onClick={() => transition(onBack)}>← {preview ? 'Към редактора' : 'Към колекцията'}</button><span>{preview ? 'ПРЕГЛЕД' : 'ДЕТАЙЛИ'}</span></header>
     <div className="detail-layout"><section className="detail-gallery" aria-label="Снимки на автомобила"><div className="detail-main-photo" {...swipe}>{photos.length ? <><button ref={launch} className="photo-expand" onClick={() => setFullscreen(true)} aria-label="Отвори снимката на цял екран"><GalleryImage src={photos[current]} alt={`${car.name}, снимка ${current + 1}`} fetchPriority="high" decoding="async"/></button><span className="photo-counter">{String(current + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span>{photos.length > 1 && <div className="photo-controls"><button onClick={() => go(current - 1)} aria-label="Предишна снимка">←</button><button onClick={() => go(current + 1)} aria-label="Следваща снимка">→</button></div>}</> : <div className="photo-missing">Няма качени снимки</div>}</div><div className="detail-thumbnails">{photos.map((url, i) => <button key={url + i} onClick={() => setCurrent(i)} aria-label={`Снимка ${i + 1}`} aria-pressed={i === current}><img src={url} alt="" loading="lazy" decoding="async"/></button>)}</div></section>
     <section className="detail-info"><p className="eyebrow">{car.sectionLabel || 'PMSELECT CARS / СЕЛЕКЦИЯТА'}</p><h1 title={car.name}>{displayName(car)}</h1><p className="detail-price">{priceOf(car.price)}</p><div className="detail-badges">{(car.badges || []).map(b => <span key={b}>{badges[b] || b}</span>)}</div>
     <div className="detail-tabs" role="tablist" aria-label="Информация за автомобила">{[['overview', 'Преглед'], ['specs', 'Характеристики'], ['description', 'Описание']].map(([key, label], i, tabs) => <button key={key} role="tab" id={`tab-${key}`} aria-controls={`panel-${key}`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setTab(key)} onKeyDown={e => { if (['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) { e.preventDefault(); const n = e.key === 'Home' ? 0 : e.key === 'End' ? 2 : (i + (e.key === 'ArrowRight' ? 1 : 2)) % 3; setTab(tabs[n][0]); document.getElementById(`tab-${tabs[n][0]}`)?.focus(); } }}>{label}</button>)}</div>

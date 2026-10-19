@@ -66,3 +66,5 @@ Inspect reference computed styles and interactions, then implement coordinated n
 - Browser testing found inactive Home lost its accessible name when its label was hidden; added permanent aria-label.
 - Preserved extra sorting/filter capabilities inside the collapsible filters to match the compact reference search.
 - Existing upstream image failures now render a clear fallback rather than overflowing broken-image alt text.
+- Gallery next image, spec tab, fullscreen open/close and return to favourites verified in browser.
+- Shared transition provider added above screens so the fade survives opening/closing vehicle detail instead of disappearing with the old screen.
