@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-export const BRAND = 'APEX DRIVE BULGARIA';
+export const BRAND = 'PMSELECT CARS';
 export const imagesOf = car => [...new Set([car?.image, ...(car?.images || [])].filter(Boolean))].slice(0, 15);
 export const numeric = value => Number(String(value ?? '').replace(/[^\d.,]/g, '').replace(',', '.'));
 export const priceOf = value => value !== '' && value != null && Number.isFinite(numeric(value)) && numeric(value) > 0 ? `${numeric(value).toLocaleString('bg-BG')} €` : 'Цена при запитване';
 const badges = { new: 'Ново постъпление', leasing: 'Лизинг / Бартер', warranty: 'Гаранция', '4x4': '4 × 4' };
 
-export function Mark({ logo }) { if (logo) return <img className="apex-logo-image" src={logo} alt={BRAND}/>; return <span className="apex-mark">APEX<span>DRIVE BULGARIA</span></span>; }
+export function Mark({ logo }) { if (logo) return <img className="apex-logo-image" src={logo} alt={BRAND}/>; return <span className="apex-mark">PMSELECT<span>CARS</span></span>; }
 function Icon({ name }) {
   const paths = { home: 'M3 11 12 3l9 8M5 10v11h5v-7h4v7h5V10', inventory: 'M3 17V9l3-5h12l3 5v8M3 10h18M6 14h2m8 0h2M5 17v3m14-3v3', contact: 'M5 3h4l2 5-3 2a16 16 0 0 0 6 6l2-3 5 2v4c-9 3-21-9-16-16Z', services: 'M12 3 3 8l9 13 9-13-9-5ZM3 8h18M8 8l4 13 4-13' };
   return <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.inventory}/></svg>;
@@ -43,24 +43,24 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
   ).sort((a, b) => sort === 'price-up' ? (numeric(a.price) || Infinity) - (numeric(b.price) || Infinity) : sort === 'price-down' ? numeric(b.price) - numeric(a.price) : sort === 'year' ? numeric(b.year) - numeric(a.year) : Number(!!b.featured) - Number(!!a.featured)), [cars, query, category, fuel, gearbox, maxPrice, minYear, maxMileage, sort, onlySaved, saved]);
   const featured = cars.find(c => c.featured && imagesOf(c).length) || cars.find(c => imagesOf(c).length);
   const hero = lot.introImage || '/apex-hero.webp';
-  const modelWord = featured?.name?.split(/\s+/).slice(1, 2).join('') || 'APEX';
+  const modelWord = featured?.name?.split(/\s+/).slice(1, 2).join('') || 'PMSELECT';
   const logo = lot.logoImage ?? branding?.logoImage;
   const video = hero && /\.(mp4|webm|mov)(\?|$)/i.test(hero);
   const navigate = key => { setMenuOpen(false); onNavigate({ key, target: key === 'home' ? null : key }); };
   const reset = () => { setQuery(''); setCategory('all'); setFuel(''); setGearbox(''); setMaxPrice(''); setMinYear(''); setMaxMileage(''); setOnlySaved(false); };
   return <div className={`apex-site ${entered ? 'is-entered' : 'is-intro'}`}>
     <a className="skip-link" href="#inventory">Към автомобилите</a>
-    {!entered && <section className={`apex-hero ${hero ? '' : 'no-photo'}`} aria-label="APEX DRIVE BULGARIA">
+    {!entered && <section className={`apex-hero ${hero ? '' : 'no-photo'}`} aria-label="PMSELECT CARS">
       <div className="intro-brand"><Mark logo={logo}/></div>
-      {video ? <video className="hero-media" src={hero} muted playsInline controls loop preload="metadata" aria-label="Представяне на автокъщата"/> : <img className="hero-media" src={hero} alt="Луксозен автомобил — атмосферата на APEX DRIVE" fetchPriority="high"/>}
-      <div className="hero-shade"/><span className="intro-monogram" aria-hidden="true">APEX</span>
+      {video ? <video className="hero-media" src={hero} muted playsInline controls loop preload="metadata" aria-label="Представяне на автокъщата"/> : <img className="hero-media" src={hero} alt="Луксозен автомобил — атмосферата на PMSELECT CARS" fetchPriority="high"/>}
+      <div className="hero-shade"/><span className="intro-monogram" aria-hidden="true">PMSELECT</span>
       <div className="hero-editorial"><h1>Луксът, който<br/>се движи с теб</h1><p className="hero-description">Влез в нова ера на шофирането. Подбрани автомобили с характер, оглед и тест драйв на място.</p><button className="button primary intro-explore" onClick={enter}>Разгледай <span>→</span></button></div>
     </section>}
     <div className="collection-screen" hidden={!entered}>
     <header className="apex-header"><button className="square-button" aria-label="Меню" aria-expanded={menuOpen} aria-controls="collection-menu" onClick={() => setMenuOpen(!menuOpen)}>☰</button><button className="brand-button" onClick={() => { setEntered(false); window.scrollTo(0,0); }} aria-label="Към началния екран"><Mark logo={logo}/></button>{lot.phone ? <a className="square-button call-button" href={`tel:${lot.phone.replace(/\s/g,'')}`} aria-label="Обади се"><Icon name="contact"/></a> : <button className="square-button" onClick={onAdmin} aria-label="Администрация">↗</button>}</header>
     {menuOpen && <nav id="collection-menu" className="collection-menu" aria-label="Меню">{navigation.map(([key,label]) => <button key={key} onClick={() => navigate(key)}>{label}<span>↗</span></button>)}<button onClick={() => { setMenuOpen(false); onAdmin(); }}>Администрация<span>↗</span></button></nav>}
-    {featured && !onlySaved && <section className="spotlight" aria-label="Избран автомобил"><div className="spotlight-visual"><span className="model-watermark" aria-hidden="true">{modelWord}</span><button onClick={() => onOpen(featured)} aria-label={`Разгледай ${featured.name}`}><img src={imagesOf(featured)[0]} alt={featured.name} fetchPriority="high"/><span className="spotlight-fade"/></button></div><div className="spotlight-copy"><p className="eyebrow">APEX / SELECTED</p><h2><button onClick={() => onOpen(featured)}>{featured.name}</button></h2>{featured.desc && <p className="spotlight-description">{featured.desc}</p>}<p className="spotlight-price">{priceOf(featured.price)}</p><div className="detail-badges">{(featured.badges || []).map(b => <span key={b}>{badges[b] || b}</span>)}</div></div></section>}
-    <div className="collection-ribbon" aria-label="APEX DRIVE — оглед и тест драйв"><span>APEX DRIVE</span><i/><span>ТЕСТ ДРАЙВ</span><i/><span>ОГЛЕД НА МЯСТО</span></div>
+    {featured && !onlySaved && <section className="spotlight" aria-label="Избран автомобил"><div className="spotlight-visual"><span className="model-watermark" aria-hidden="true">{modelWord}</span><button onClick={() => onOpen(featured)} aria-label={`Разгледай ${featured.name}`}><img src={imagesOf(featured)[0]} alt={featured.name} fetchPriority="high"/><span className="spotlight-fade"/></button></div><div className="spotlight-copy"><p className="eyebrow">PMSELECT / SELECTED</p><h2><button onClick={() => onOpen(featured)}>{featured.name}</button></h2>{featured.desc && <p className="spotlight-description">{featured.desc}</p>}<p className="spotlight-price">{priceOf(featured.price)}</p><div className="detail-badges">{(featured.badges || []).map(b => <span key={b}>{badges[b] || b}</span>)}</div></div></section>}
+    <div className="collection-ribbon" aria-label="PMSELECT CARS — оглед и тест драйв"><span>PMSELECT CARS</span><i/><span>ТЕСТ ДРАЙВ</span><i/><span>ОГЛЕД НА МЯСТО</span></div>
     {lot.demoExpired ? <div className="apex-empty" role="status">Пробният период е приключил — това е демо версия на приложението.</div> : <>
     <main id="inventory" className="apex-inventory">
       <h2 className="sr-only">{onlySaved ? 'Любими автомобили' : 'Автомобилна селекция'}</h2>
