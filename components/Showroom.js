@@ -51,7 +51,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
   return <div className={`apex-site ${entered ? 'is-entered' : 'is-intro'}`}>
     <a className="skip-link" href="#inventory">Към автомобилите</a>
     {!entered && <section className={`apex-hero ${hero ? '' : 'no-photo'}`} aria-label="PMSELECT CARS">
-      
+      <div className="intro-brand"><Mark logo={logo}/></div>
       {video ? <video className="hero-media" src={hero} muted playsInline controls loop preload="metadata" aria-label="Представяне на автокъщата"/> : <img className="hero-media" src={hero} alt="Луксозен автомобил — атмосферата на PMSELECT CARS" fetchPriority="high" decoding="async"/>}
       <div className="hero-shade"/>
       <div className="hero-editorial"><h1>Луксът, който<br/>се движи с теб</h1><p className="hero-description">Влез в нова ера на шофирането. Подбрани автомобили с характер, оглед и тест драйв на място.</p><button className="button primary intro-explore" onClick={enter}>Разгледай <span>→</span></button></div>
