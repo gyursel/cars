@@ -33,3 +33,15 @@
 
 ## Next concrete step
 Inspect reference computed styles and interactions, then implement coordinated navigation transition and moving ribbon.
+
+## Implementation checkpoint
+- Original supplied logo bundled without redraw; whitespace clipped in CSS.
+- Reference Playfair Display / Plus Jakarta Sans bundled locally.
+- Separate search/favourites/contact screens preserve existing controls and data.
+- Cancellable 150ms exit / 500ms veil, 36s marquee, image/card/panel motion.
+- npm run build PASS (Next 16.2.9).
+- Last remotely successful commit: 0ba6b50834eb67ed0010e1a5e751050664710f3b.
+- Git CLI push lacks credentials; checkpoints use authenticated GitHub commit/ref API.
+- Draft PR: https://github.com/gyursel/cars/pull/8
+- Vercel connector returns 403 for gyursels-projects; CLI unavailable. Use Git integration preview, do not alter permissions.
+- Next: mobile preview visual/functional test, refine observed discrepancies.

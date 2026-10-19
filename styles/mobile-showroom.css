@@ -34,16 +34,93 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .detail-main-photo{touch-action:pan-y}.apex-lightbox>.gallery-image{height:100%}
 @media(prefers-reduced-motion:reduce){.apex-detail,.collection-screen,.gallery-image-frame{animation:none}}
 
-/* PM Select original logo: correct the undersized hero branding on mobile. */
-.intro-brand{width:min(58vw,270px);height:74px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.intro-brand .apex-logo-image{width:100%;height:100%;max-height:none;object-fit:cover;object-position:center;display:block}
-@media(min-width:768px){.intro-brand{width:300px;height:82px}}
 
-/* Cinematic, non-interactive navigation dim / brighten transition. */
-.pmselect-transition-veil{position:fixed;inset:0;z-index:120;pointer-events:none;background:#050507;opacity:0;animation:pmselect-scene-breathe 520ms ease-in-out both}
-@keyframes pmselect-scene-breathe{0%{opacity:0}43%{opacity:.28}100%{opacity:0}}
-/* Animated horizontal light sweep on the collection divider. */
-.collection-ribbon{position:relative;isolation:isolate}
-.collection-ribbon::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent 0%,transparent 20%,#f0444f 50%,transparent 80%,transparent 100%);transform:translateX(-100%);animation:pmselect-line-sweep 7s linear infinite;opacity:.85}
-@keyframes pmselect-line-sweep{to{transform:translateX(100%)}}
-@media(prefers-reduced-motion:reduce){.pmselect-transition-veil{display:none}.collection-ribbon::after{animation:none;transform:none;opacity:.2}}
+/* Reference composition: scoped to the public showroom, never the editor. */
+.apex-site,.apex-detail{--serif:'Playfair Display',Georgia,serif;--sans:'Plus Jakarta Sans','Manrope',sans-serif;font-family:var(--sans);background:#070709}
+.pm-logo-crop{position:relative;display:block;overflow:hidden;width:150px;aspect-ratio:590/148;flex-shrink:0}
+.pm-logo-crop .apex-logo-image{position:absolute;width:197.8%;height:324.32%;max-height:none;left:-57.63%;top:-107.43%;object-fit:fill}
+.intro-brand{width:auto;height:auto;top:28px;left:24px}
+.intro-brand .pm-logo-crop{width:190px}
+.brand-button{display:flex;align-items:center;justify-content:center;padding:0}
+.brand-button .pm-logo-crop{width:150px}
+.apex-hero{min-height:600px;height:100svh}
+.hero-media{animation:hero-drift 18s ease-out both}
+.hero-editorial{padding:24px 24px calc(32px + env(safe-area-inset-bottom))}
+.hero-editorial h1{font:700 36px/1.13 var(--serif);letter-spacing:-.025em}
+.hero-description{font:400 12px/1.8 var(--sans);margin:16px 0 26px}
+.intro-explore{min-height:54px;border-radius:13px}
+.apex-header{height:66px}
+.spotlight{padding-bottom:24px;overflow:hidden}
+.spotlight-visual{padding-top:88px}
+.spotlight-watermark{position:absolute;top:-20px;right:12px;font:800 100px/1.3 var(--sans);color:#ffffff05;letter-spacing:-.09em;white-space:nowrap;pointer-events:none}
+.spotlight-visual>button{aspect-ratio:1.65;border-radius:30px}
+.spotlight-copy{padding-top:22px}
+.spotlight-copy h2{font:700 30px/1.25 var(--serif);letter-spacing:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.spotlight-description{font:400 14px/1.6 var(--sans);margin-top:10px}
+.spotlight-price{font:700 20px/1.4 var(--sans);margin:14px 0 12px}
+.detail-badges span{font-size:10px}
+.collection-ribbon{position:relative;display:block;height:42px;isolation:isolate;overflow:hidden;font:600 10px var(--serif);letter-spacing:.3em}
+.ribbon-track{display:flex;width:max-content;height:100%;animation:marquee-x 36s linear infinite}
+.ribbon-copy{display:flex;align-items:center;gap:32px;padding-right:32px;flex-shrink:0}
+.ribbon-copy>span{display:flex;align-items:center;gap:32px}
+.collection-ribbon::after{content:'';position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#ef394455,transparent);animation:light-pass 7s linear infinite;pointer-events:none}
+.category-tabs{gap:10px;margin-bottom:24px}
+.category-tabs button{font-size:13px;padding:10px 19px;min-height:42px;border-radius:16px;transition:background .3s,transform .3s}
+.apex-inventory{padding-top:24px}
+.mode-home .results-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.apex-grid{gap:16px 14px}
+.apex-car{border-radius:24px;animation:card-arrive .45s var(--ease) both}
+.car-copy h3{font:600 15px/1.375 var(--serif);letter-spacing:0;min-height:2.75em;max-height:2.75em}
+.car-spec-line{font-size:10px}
+.car-bottom strong{font:700 14px/1.4 var(--sans)}
+.car-photo img{transition:transform .7s cubic-bezier(0,0,.2,1)}
+@media(hover:hover){.car-link:hover .car-photo img{transform:scale(1.1)}}
+.save-car{transition:transform .3s,color .3s}.save-car:active{transform:scale(.75)}
+.apex-bottom-nav{height:60px;background:linear-gradient(120deg,#23181bd9,#111116e8 60%,#161519ed);backdrop-filter:blur(20px);padding:7px;border-radius:24px}
+.apex-bottom-nav button{font-size:12px;transition:flex .35s var(--ease),background .3s,color .3s,transform .2s}
+.apex-bottom-nav button:active{transform:scale(.94);opacity:1}
+.apex-bottom-nav button>span{animation:label-arrive .25s ease-out both}
+.mode-heading:empty,.contact-screen-heading{display:none}
+.mode-heading h1,.contact-screen-heading h1{font:700 30px/1.25 var(--serif)}
+.mode-heading p,.contact-screen-heading p{margin:6px 0 20px;color:#85858f;font-size:14px;line-height:1.5}
+.mode-search .apex-header,.mode-saved .apex-header,.mode-contact .apex-header,
+.mode-search .spotlight,.mode-saved .spotlight,.mode-contact .spotlight,
+.mode-search .collection-ribbon,.mode-saved .collection-ribbon,.mode-contact .collection-ribbon,
+.mode-search .category-tabs,.mode-saved .category-tabs,
+.mode-search .apex-services,.mode-saved .apex-services,.mode-contact .apex-services,
+.mode-search .apex-contact,.mode-saved .apex-contact,.mode-contact .apex-inventory{display:none}
+.mode-search .apex-inventory,.mode-saved .apex-inventory{min-height:100svh;padding-bottom:100px}
+.mode-search .search-panel{padding:0;background:none;border:0}
+.mode-search .search-field{background:#0d0d12;border-radius:16px;padding-inline:16px}
+.mode-search .search-field input{font-size:13px;padding-block:17px}
+.mode-search .sort-field,.mode-search .advanced-filters{margin-top:6px}
+.mode-search .apex-grid{grid-template-columns:1fr;gap:12px}
+.mode-search .apex-car{border-radius:18px;background:#121218}
+.mode-search .car-link{aspect-ratio:auto;min-height:100px;display:flex;align-items:center;padding:12px;gap:14px}
+.mode-search .car-photo{position:relative;inset:auto;flex:0 0 96px;width:96px;height:72px;border-radius:12px;overflow:hidden}
+.mode-search .car-photo img{height:100%;width:100%}.mode-search .car-photo::after{display:none}
+.mode-search .car-copy{position:static;flex:1;padding:0 14px 0 0;min-width:0}
+.mode-search .car-copy h3{font-size:15px;min-height:0;max-height:2.75em}
+.mode-search .car-bottom .car-arrow{background:none;border:0;box-shadow:none;color:#60606b;width:18px;height:18px;font-size:17px}
+.mode-search .save-car,.mode-search .car-badge{display:none}
+.mode-contact .apex-contact{min-height:100svh;padding-top:24px;background:#070709}
+.mode-contact .contact-screen-heading{display:block}.mode-contact .contact-screen-heading .pm-logo-crop{width:230px;margin:48px auto 30px}
+.mode-contact .apex-contact>.eyebrow,.mode-contact .apex-contact>h2{display:none}
+.mode-contact .contact-phone{display:block;text-align:center;font:600 24px var(--sans)}
+.mode-contact .footer-note{font-size:14px;line-height:1.8;text-align:center}
+.mode-saved .apex-empty h3{font:500 16px var(--sans)}
+.detail-header{position:sticky;top:0;z-index:35;background:#0b0b0eea;backdrop-filter:blur(16px)}
+.detail-header>span:last-child{display:block;font-size:11px;color:#8b8b95}
+.detail-info h1{font:700 30px/1.25 var(--serif);letter-spacing:0}
+.detail-panel{animation:panel-arrive .35s ease-out both}
+.gallery-image-frame{animation:gallery-enter .45s cubic-bezier(.22,1,.36,1) both}
+.pmselect-transition-veil{position:fixed;inset:0;z-index:120;pointer-events:none;background:#050507;animation:scene-breathe 500ms ease-in-out both}
+@keyframes scene-breathe{0%{opacity:0}30%{opacity:.92}45%{opacity:.92}100%{opacity:0}}
+@keyframes marquee-x{to{transform:translateX(-50%)}}
+@keyframes light-pass{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes hero-drift{from{transform:scale(1.045)}to{transform:scale(1)}}
+@keyframes card-arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes label-arrive{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
+@keyframes panel-arrive{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:380px){.hero-editorial h1{font-size:32px}.spotlight-copy h2{font-size:27px}.category-tabs button{font-size:12px}.mode-search .car-photo{flex-basis:82px;width:82px}.apex-bottom-nav button{padding-inline:8px}}
+@media(prefers-reduced-motion:reduce){.pmselect-transition-veil{display:none}.ribbon-track{animation:none}.hero-media{transform:none}.apex-car,.detail-panel{animation:none}}
