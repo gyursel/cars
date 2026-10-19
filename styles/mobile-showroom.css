@@ -153,3 +153,9 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .mode-search .advanced-filters .sort-field{display:flex;margin:12px 0}
 .vehicle-photo-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:65%;padding:12px;color:#85858f;font-size:11px;background:radial-gradient(ellipse at center,#25252d,#111116);text-align:center}
 .mode-search .vehicle-photo-fallback{height:100%;font-size:10px}
+/* Fixed hit targets: selecting a tab must never move its neighbours under a tap. */
+.apex-bottom-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));z-index:121}
+.apex-bottom-nav button,.apex-bottom-nav .is-active{flex:none;min-width:0;width:100%;gap:4px;padding:10px 5px;font-size:11px;transition:background-color .15s,color .15s}
+.apex-bottom-nav button>span{animation:none;white-space:nowrap}
+.apex-bottom-nav button:active{transform:none}
+.mode-home .apex-car,.mode-search .apex-car,.mode-saved .apex-car{animation:none}

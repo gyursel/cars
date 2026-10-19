@@ -55,22 +55,23 @@ try {
     const nav = page.getByRole('navigation', { name: 'Мобилна навигация' });
     await nav.waitFor();
     await page.locator('.pmselect-transition-veil').waitFor({ state: 'detached' });
-    // Burst on real controls: one accepted gesture, no hidden-screen click-through.
+    // Burst on real controls: each navigation tap is immediate; hit targets never move.
     const samples = await page.evaluate(async () => {
       const buttons = [...document.querySelectorAll('.apex-bottom-nav button')];
       const samples = [];
+      const originalBoxes = buttons.map(button => button.getBoundingClientRect().toJSON());
       for (const index of [1, 2, 3, 0, 3, 1, 2, 1, 0]) {
         const start = performance.now(); buttons[index].click();
         await new Promise(requestAnimationFrame);
         const active = buttons.filter(button => button.classList.contains('is-active'));
-        samples.push({ count: active.length, selected: buttons.indexOf(active[0]), expected: 1, ms: performance.now() - start });
+        samples.push({ count: active.length, selected: buttons.indexOf(active[0]), expected: index, stationary: buttons.every((button, n) => { const rect = button.getBoundingClientRect(); return Math.abs(rect.x-originalBoxes[n].x)<1 && Math.abs(rect.width-originalBoxes[n].width)<1; }), ms: performance.now() - start });
       }
       return samples;
     });
-    samples.forEach(sample => { assert.equal(sample.count, 1); assert.ok([0, 1].includes(sample.selected), 'burst must not select an unintended screen'); });
+    samples.forEach(sample => { assert.equal(sample.count, 1); assert.equal(sample.selected, sample.expected); assert.equal(sample.stationary, true, 'tab hit boxes must not move'); });
     assert.equal(await nav.locator('[aria-current="page"]').count(), 1);
     await page.waitForTimeout(650);
-    assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Търсене и филтри');
+    assert.equal(await nav.locator('.is-active').getAttribute('aria-label'), 'Начало');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `overflow at ${width}`);
     await nav.getByRole('button', { name: 'Контакти', exact: true }).click();
     await page.waitForTimeout(900);

@@ -55,3 +55,24 @@ test('reduced motion commits immediately but ignores the duplicate gesture', () 
   f.advance(180);
   assert.deepEqual(f.states, [true, false]);
 });
+
+test('fast navigation always selects the latest tab and never waits for a fade', () => {
+  const f = fixture();
+  for (const screen of ['search','saved','contact','home','saved']) {
+    f.transition.navigate(() => f.screens.push(screen));
+    assert.equal(f.screens.at(-1), screen);
+  }
+  f.advance(1000);
+  assert.deepEqual(f.screens, ['search','saved','contact','home','saved']);
+  assert.equal(f.states.includes(true), false);
+});
+
+test('navigation supersedes a pending detail and the old detail cannot open later', () => {
+  const f = fixture();
+  f.transition.start(() => f.screens.push('unwanted detail'));
+  f.advance(30);
+  f.transition.navigate(() => f.screens.push('contact'));
+  f.advance(1000);
+  assert.deepEqual(f.screens, ['contact']);
+  assert.deepEqual(f.states, [true,false]);
+});

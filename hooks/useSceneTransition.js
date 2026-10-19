@@ -20,6 +20,7 @@ export function SceneTransitionProvider({ children }) {
   }, []);
   const context = useMemo(() => ({
     transition: commit => controller.current.start(commit, !matchMedia('(prefers-reduced-motion: reduce)').matches),
+    navigate: commit => controller.current.navigate(commit),
   }), []);
   return <SceneTransitionContext.Provider value={context}>
     {children}
@@ -28,5 +29,5 @@ export function SceneTransitionProvider({ children }) {
 }
 
 export function useSceneTransition() {
-  return useContext(SceneTransitionContext) || { transition: commit => { commit(); return true; } };
+  return useContext(SceneTransitionContext) || { transition: commit => { commit(); return true; }, navigate: commit => { commit(); return true; } };
 }
