@@ -591,17 +591,17 @@ export default function Home() {
   }, [screen, lot]);
 
   function handleNavigate(item) {
-    navLockUntil.current = Date.now() + 950;
+    navLockUntil.current = Date.now() + 260;
     if (screen !== 'lot') { setScreen('lot'); setSelectedCar(null); }
     setActiveNav(item.key);
 
     const scrollToTarget = () => {
-      if (!item.target) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      if (!item.target) { window.scrollTo({ top: 0, behavior: 'instant' }); return; }
       const el = document.getElementById(item.target);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
     };
 
-    if (screen !== 'lot') setTimeout(scrollToTarget, 60);
+    if (screen !== 'lot') requestAnimationFrame(scrollToTarget);
     else scrollToTarget();
   }
 
