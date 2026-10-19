@@ -855,7 +855,7 @@ export default function Home() {
     <>
       <Head>
         <title>{selectedCar && screen === 'car' ? `${selectedCar.name} | ${BRAND}` : `${BRAND} — Автомобили с характер`}</title>
-        <meta name="description" content="APEX DRIVE BULGARIA — автомобилна селекция, детайлни предложения и личен подход към следващия ти автомобил." />
+        <meta name="description" content="PMSELECT CARS — автомобилна селекция, детайлни предложения и личен подход към следващия ти автомобил." />
         <meta property="og:title" content={BRAND} />
         <meta property="og:type" content="website" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -966,7 +966,7 @@ export default function Home() {
         );
       })()}
 
-      {screen === 'login' && <main className="apex-login"><Mark/><form onSubmit={e => { e.preventDefault(); doLogin(); }}><h1>Добре дошъл.</h1><p>Вход в администрацията на APEX DRIVE BULGARIA.</p><label>Парола<input autoComplete="current-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label><button className="button primary" disabled={loginBusy}>{loginBusy ? 'Проверка…' : 'Влез в администрацията ↗'}</button>{loginError && <p role="alert">{loginError}</p>}<button type="button" className="text-button" onClick={() => setScreen('lot')}>← Назад към автомобилите</button></form></main>}
+      {screen === 'login' && <main className="apex-login"><Mark/><form onSubmit={e => { e.preventDefault(); doLogin(); }}><h1>Добре дошъл.</h1><p>Вход в администрацията на PMSELECT CARS.</p><label>Парола<input autoComplete="current-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label><button className="button primary" disabled={loginBusy}>{loginBusy ? 'Проверка…' : 'Влез в администрацията ↗'}</button>{loginError && <p role="alert">{loginError}</p>}<button type="button" className="text-button" onClick={() => setScreen('lot')}>← Назад към автомобилите</button></form></main>}
 
       {screen === 'admin' && adminLot && (
         <div className="apex-admin" style={{ background: '#F5F6F7', minHeight: '100vh' }}>
