@@ -1,3 +1,6 @@
+import { isRequestAuthenticated } from '../../lib/auth';
+import { fetchPmselectPage } from '../../lib/pmselectFetch';
+
 function decodeHtml(value = '') {
   return value
     .replace(/&nbsp;|&#160;/gi, ' ')
@@ -27,13 +30,7 @@ function plainText(html = '') {
 }
 
 async function fetchHtml(url) {
-  const r = await fetch(url, {
-    headers: {
-      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/152 Safari/537.36',
-      'accept-language': 'bg-BG,bg;q=0.9,en;q=0.8'
-    },
-    redirect: 'follow'
-  });
+  const r = await fetchPmselectPage(url);
   if (!r.ok) throw new Error(`HTTP ${r.status} при ${url}`);
 
   const buf = Buffer.from(await r.arrayBuffer());
@@ -46,6 +43,9 @@ async function fetchHtml(url) {
 }
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!isRequestAuthenticated(req)) return res.status(401).json({ error: 'Влез отново в администрацията.' });
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   const url = req.query.url || 'https://pmselect.mobile.bg/obiava-11778481183815155-mini-cooper-s-all4-hamann-pop-corn-4x4';
   try {
     const { html, encoding, headerCharset, metaCharset } = await fetchHtml(url);

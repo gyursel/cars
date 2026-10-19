@@ -1,3 +1,6 @@
+import { isRequestAuthenticated } from '../../lib/auth';
+import { fetchPmselectPage } from '../../lib/pmselectFetch';
+
 const BASE = 'https://pmselect.mobile.bg/';
 
 function decodeHtml(value = '') {
@@ -261,13 +264,7 @@ function extractDetail(html, sourceUrl) {
 }
 
 async function fetchHtml(url) {
-  const r = await fetch(url, {
-    headers: {
-      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/152 Safari/537.36',
-      'accept-language': 'bg-BG,bg;q=0.9,en;q=0.8'
-    },
-    redirect: 'follow'
-  });
+  const r = await fetchPmselectPage(url);
   if (!r.ok) throw new Error(`HTTP ${r.status} при ${url}`);
 
   // response.text() винаги декодира като UTF-8, независимо от реалния charset.
@@ -287,6 +284,8 @@ async function fetchHtml(url) {
 }
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!isRequestAuthenticated(req)) return res.status(401).json({ error: 'Влез отново в администрацията.' });
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const overview = await fetchHtml(BASE);
@@ -320,7 +319,7 @@ export default async function handler(req, res) {
 
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
-      dealershipName: 'PM SELECT AUTOMOTIVE',
+      dealershipName: 'PMSELECT CARS',
       phone: '+359 899 225 640',
       count: cars.length,
       sections

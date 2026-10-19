@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { Showroom, CarDetail } from '../components/Showroom';
+const cars = Array.from({ length: 12 }, (_, i) => ({ catalogId: `fixture-${i}`, listKey: String(i), name: i === 0 ? 'Mercedes-Benz S 500 Long 4MATIC Специална лимитирана серия с изключително дълго име' : `BMW 530d Тест ${i}`, year: '2022', fuel: 'Дизел', mileage: '42 000 km', price: i ? '35900' : '129500', image: '/apex-hero.webp', images: ['/apex-hero.webp', '/qa-slow.svg', '/qa-fast.svg', '/qa-missing.svg'], featured: i === 0 }));
+const lot = { phone: '+359000000000', introImage: '/apex-hero.webp', sections: [{ label: 'Селекция', cars }], fullGalleryImages: ['/apex-hero.webp'] };
+export default function QA() {
+ const [car, setCar] = useState(null);
+ return <><div hidden={!!car}><Showroom lot={lot} visible={!car} onOpen={setCar} onAdmin={() => {}} onGallery={() => {}} /></div>{car && <CarDetail car={car} phone={lot.phone} onBack={() => setCar(null)}/>}</>;
+}
