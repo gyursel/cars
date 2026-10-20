@@ -1,3 +1,4 @@
+import { isRequestAuthenticated } from '../../lib/auth';
 function decodeHtml(value = '') {
   return value
     .replace(/&nbsp;|&#160;/gi, ' ')
@@ -32,7 +33,8 @@ async function fetchHtml(url) {
       'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/152 Safari/537.36',
       'accept-language': 'bg-BG,bg;q=0.9,en;q=0.8'
     },
-    redirect: 'follow'
+    redirect: 'error',
+    signal: AbortSignal.timeout(10000)
   });
   if (!r.ok) throw new Error(`HTTP ${r.status} при ${url}`);
 
@@ -46,7 +48,14 @@ async function fetchHtml(url) {
 }
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (!isRequestAuthenticated(req)) return res.status(401).json({ error: 'Влез в администрацията.' });
   const url = req.query.url || 'https://pmselect.mobile.bg/obiava-11778481183815155-mini-cooper-s-all4-hamann-pop-corn-4x4';
+  try {
+    const target = new URL(url);
+    if (typeof url !== 'string' || target.protocol !== 'https:' || target.hostname !== 'pmselect.mobile.bg' || target.port || target.username || target.password) return res.status(400).json({ error: 'Непозволен адрес.' });
+  } catch { return res.status(400).json({ error: 'Невалиден адрес.' }); }
   try {
     const { html, encoding, headerCharset, metaCharset } = await fetchHtml(url);
     const text = plainText(html);
