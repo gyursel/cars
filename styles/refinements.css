@@ -1,0 +1,84 @@
+/* Readable controls and responsive layouts, retaining the existing visual identity. */
+:root{--muted:#a6a3ad;--heading:#f6e9e9}
+.apex-site h1,.apex-site h2,.apex-site h3,.detail-info h1{color:var(--heading);text-wrap:balance}
+.apex-site [hidden]{display:none!important}
+.apex-hero{min-height:620px;height:100svh}
+.hero-description{font-size:14px;line-height:1.75;color:#c4bec5}
+.hero-editorial h1{font-size:clamp(32px,8.6vw,40px)}
+.square-button{width:44px;height:44px;min-width:44px}
+.collection-menu button{min-height:48px;font-size:14px}
+.spotlight-description{font-size:14px;color:#b6b0ba}
+.spotlight-price,.car-bottom strong,.detail-price{font-variant-numeric:tabular-nums}
+.detail-badges span{font-size:11px;color:#e9a5ab;padding:6px 10px}
+.collection-ribbon{font:10px var(--sans);letter-spacing:.1em;color:#b4aeb8;gap:10px}
+.category-tabs button{min-height:44px;font-size:12px}
+.results-label{font-size:12px;color:var(--muted);padding-bottom:16px}
+.apex-grid{gap:16px 12px;align-items:stretch}
+.apex-car{border-color:#ffffff14;border-radius:18px;transition:border-color .25s,box-shadow .25s,transform .25s var(--ease)}
+.car-link{aspect-ratio:auto;height:100%;display:flex;flex-direction:column;text-align:left;padding:0}
+.car-photo{position:relative;inset:auto;width:100%;aspect-ratio:4/3;overflow:hidden;flex-shrink:0}
+.car-photo img{height:100%;width:100%;object-fit:cover}
+.car-photo::after{background:linear-gradient(transparent 60%,#14141965)}
+.car-copy{position:static;width:100%;padding:13px 12px 14px;display:flex;flex:1;flex-direction:column}
+.car-copy h3{font:600 16px/1.35 var(--serif);white-space:normal;overflow-wrap:anywhere;min-height:2.7em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.car-spec-line{font-size:11px;line-height:1.6;min-height:18px;margin:7px 0 12px;color:#b5aeb9}
+.car-bottom{margin-top:auto;gap:6px;align-items:center}
+.car-bottom strong{font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.car-bottom .car-arrow{width:28px;height:28px;border-radius:9px}
+.save-car{width:44px;height:44px;right:6px;top:6px}
+.car-badge{max-width:calc(100% - 62px);font-size:9px;top:16px}
+.car-photo .photo-missing{height:100%;padding:20px;display:grid;place-items:center;text-align:center;font-size:12px}
+.search-field input,.sort-field select,.filter-grid select,.filter-grid input{font-size:16px;min-height:46px}
+.sort-field,.filter-grid label{font-size:12px}
+.advanced-filters summary{font-size:13px;min-height:44px}
+.advanced-filters summary span{font-size:10px}
+.apex-empty p,.section-heading>p:not(.collection-count),.services-grid p,.footer-note{font-size:14px;line-height:1.8;color:#b6b0ba}
+.services-grid a{width:44px;height:44px;display:grid;place-items:center;padding:0}
+.services-grid p{max-width:calc(100% - 48px)}
+.section-heading .eyebrow,.apex-contact>.eyebrow{font-size:10px}
+.footer-bottom>span{font-size:10px;line-height:1.6}
+.footer-bottom .text-button{font-size:12px}
+.apex-bottom-nav{height:68px;padding:5px;border-radius:22px}
+.apex-bottom-nav button,.apex-bottom-nav .is-active{flex:1;flex-direction:column;gap:4px;padding:7px 3px;min-height:54px;font-size:10px;border-radius:16px}
+.apex-bottom-nav button:not(.is-active)>span{display:block}
+.apex-bottom-nav svg{width:20px;height:20px}
+.apex-contact{padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+.detail-tabs button{font-size:12px}
+.detail-panel p,.specification-list>div{font-size:14px;line-height:1.75}
+.specification-list dd{overflow-wrap:anywhere;max-width:62%}
+.detail-highlights span{font-size:10px}
+.detail-highlights strong{font:600 16px/1.4 var(--sans)}
+.detail-action>span,.detail-action small{font-size:12px}
+.detail-action{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+.photo-controls button{width:44px;height:44px}
+.detail-header .text-button{font-size:12px;min-height:44px}
+.collection-screen{animation:reveal .4s var(--ease)}
+@media(hover:hover){.apex-car:hover{border-color:#e54b5555;box-shadow:0 12px 30px #0004;transform:translateY(-3px)}.save-car:hover{background:#352027}.category-tabs button:hover{border-color:#e54b5577}}
+@media(min-width:768px){
+ .apex-site,.apex-detail,.apex-loading{max-width:1280px;width:100%}
+ .apex-hero{height:min(900px,100svh);min-height:660px}
+ .intro-brand{top:40px;left:6%}.intro-brand .apex-mark{font-size:27px}
+ .hero-media{object-position:center 44%}.hero-shade{background:linear-gradient(90deg,#070709db, #07070940 65%),linear-gradient(0deg,#070709,transparent 70%)}
+ .hero-editorial{left:6%;bottom:9%;right:auto;padding:0;width:54%;max-width:620px}
+ .hero-editorial h1{font-size:clamp(44px,5.5vw,70px);max-width:none;line-height:1.12}
+ .hero-description{max-width:440px;font-size:16px;margin:24px 0 30px}.intro-explore{max-width:300px}
+ .intro-monogram{font-size:clamp(140px,22vw,270px);top:32%;text-align:right;padding-right:5%}
+ .apex-header{height:80px;padding-inline:5%}.apex-header .apex-mark{font-size:22px}
+ .spotlight{display:grid;grid-template-columns:1.25fr 1fr;align-items:center;gap:5%;padding:35px 5% 40px}
+ .spotlight-visual{padding-top:50px}.spotlight-copy{padding-top:30px}.spotlight-copy>.eyebrow{display:block;font-size:11px;color:#d38e95;margin-bottom:14px}
+ .spotlight-copy h2{font-size:clamp(28px,3vw,42px)}.spotlight-price{font-size:26px}.spotlight-description{-webkit-line-clamp:3;font-size:15px}
+ .collection-ribbon{justify-content:center;gap:40px;height:44px;font-size:11px}
+ .apex-inventory,.apex-services{padding:36px 5% 48px}.category-tabs{margin-right:0}
+ .apex-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 20px}.car-copy{padding:18px}.car-copy h3{font-size:21px}.car-spec-line{font-size:12px}.car-bottom strong{font-size:18px}
+ .search-panel{padding:20px}.filter-toolbar{flex-wrap:nowrap}.search-field{flex-basis:auto}.sort-field{width:auto}.filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .section-heading h2{font-size:36px}.services-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.services-grid h3{font-size:24px}.services-grid article{padding-right:15px}.services-grid a{position:static;margin-top:12px}.services-grid p{max-width:100%}
+ .apex-contact{padding:44px 5% 125px}.apex-contact h2{font-size:44px}.contact-phone{font-size:34px}
+ .footer-bottom>span{order:0;width:auto}.apex-bottom-nav{width:440px}
+ .detail-header{padding:0 5%;height:80px}.detail-layout{display:grid;grid-template-columns:1.15fr 1fr;gap:32px;padding:28px 4% 60px;align-items:start}.detail-gallery{padding:0;position:sticky;top:24px}
+ .detail-main-photo{aspect-ratio:1.15;padding-top:50px}.detail-info{padding:20px 0}.detail-info h1{font-size:38px}.detail-price{font-size:26px}
+ .detail-action{position:static;transform:none;width:100%;padding:20px 0;background:transparent}.detail-action .button{flex-basis:auto}.detail-tabs button{font-size:11px}
+ .skeleton-grid{grid-template-columns:repeat(3,1fr)}.skeleton-grid>div:last-child{display:block}
+}
+@media(min-width:1100px){.apex-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:350px){.apex-grid{grid-template-columns:1fr}.car-copy h3{min-height:0;font-size:21px}.car-spec-line{font-size:12px}.car-bottom strong{font-size:17px}.collection-ribbon{font-size:9px;gap:6px}.detail-highlights{grid-template-columns:1fr}.advanced-filters summary span{display:none}}
+@media(prefers-reduced-motion:reduce){.collection-screen{animation:none}.apex-car{transition:none}}
