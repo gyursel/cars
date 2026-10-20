@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const BRAND = 'APEX DRIVE BULGARIA';
-import { imagesOf, numeric, yearOf } from '../lib/catalogValues';
-export { imagesOf, numeric } from '../lib/catalogValues';
+export const imagesOf = car => [...new Set([car?.image, ...(car?.images || [])].filter(Boolean))].slice(0, 15);
+export const numeric = value => Number(String(value ?? '').replace(/[^\d.,]/g, '').replace(',', '.'));
 export const priceOf = value => value !== '' && value != null && Number.isFinite(numeric(value)) && numeric(value) > 0 ? `${numeric(value).toLocaleString('bg-BG')} €` : 'Цена при запитване';
 const badges = { new: 'Ново постъпление', leasing: 'Лизинг / Бартер', warranty: 'Гаранция', '4x4': '4 × 4' };
 
@@ -38,9 +38,9 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
     (!query || `${c.name} ${c.desc || ''}`.toLocaleLowerCase('bg').includes(query.trim().toLocaleLowerCase('bg'))) &&
     (!fuel || c.fuel === fuel) && (!gearbox || c.gearbox === gearbox) &&
     (!maxPrice || (numeric(c.price) > 0 && numeric(c.price) <= Number(maxPrice))) &&
-    (!minYear || (yearOf(c) >= Number(minYear))) &&
+    (!minYear || (numeric(c.year || (c.productionDate || '').match(/\d{4}/)?.[0]) >= Number(minYear))) &&
     (!maxMileage || (c.mileage && numeric(c.mileage) <= Number(maxMileage)))
-  ).sort((a, b) => sort === 'price-up' ? (numeric(a.price) || Infinity) - (numeric(b.price) || Infinity) : sort === 'price-down' ? numeric(b.price) - numeric(a.price) : sort === 'year' ? yearOf(b) - yearOf(a) : Number(!!b.featured) - Number(!!a.featured)), [cars, query, category, fuel, gearbox, maxPrice, minYear, maxMileage, sort, onlySaved, saved]);
+  ).sort((a, b) => sort === 'price-up' ? (numeric(a.price) || Infinity) - (numeric(b.price) || Infinity) : sort === 'price-down' ? numeric(b.price) - numeric(a.price) : sort === 'year' ? numeric(b.year) - numeric(a.year) : Number(!!b.featured) - Number(!!a.featured)), [cars, query, category, fuel, gearbox, maxPrice, minYear, maxMileage, sort, onlySaved, saved]);
   const featured = cars.find(c => c.featured && imagesOf(c).length) || cars.find(c => imagesOf(c).length);
   const hero = lot.introImage || '/apex-hero.webp';
   const modelWord = featured?.name?.split(/\s+/).slice(1, 2).join('') || 'APEX';
@@ -49,7 +49,7 @@ export function Showroom({ lot, branding, onOpen, onAdmin, onGallery, activeNav,
   const navigate = key => { setMenuOpen(false); onNavigate({ key, target: key === 'home' ? null : key }); };
   const reset = () => { setQuery(''); setCategory('all'); setFuel(''); setGearbox(''); setMaxPrice(''); setMinYear(''); setMaxMileage(''); setOnlySaved(false); };
   return <div className={`apex-site ${entered ? 'is-entered' : 'is-intro'}`}>
-    <a className="skip-link" href="#inventory" onClick={() => setEntered(true)}>Към автомобилите</a>
+    <a className="skip-link" href="#inventory">Към автомобилите</a>
     {!entered && <section className={`apex-hero ${hero ? '' : 'no-photo'}`} aria-label="APEX DRIVE BULGARIA">
       <div className="intro-brand"><Mark logo={logo}/></div>
       {video ? <video className="hero-media" src={hero} muted playsInline controls loop preload="metadata" aria-label="Представяне на автокъщата"/> : <img className="hero-media" src={hero} alt="Луксозен автомобил — атмосферата на APEX DRIVE" fetchPriority="high"/>}

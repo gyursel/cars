@@ -545,15 +545,11 @@ export default function Home() {
   useEffect(() => {
     if (isStandaloneMode()) return;
 
-    let dismissedAt;
-    let visits;
-    try {
-      dismissedAt = localStorage.getItem('lot_install_dismissed');
-      visits = (parseInt(localStorage.getItem('lot_visits') || '0', 10) || 0) + 1;
-      localStorage.setItem('lot_visits', String(visits));
-    } catch { return; }
+    const dismissedAt = localStorage.getItem('lot_install_dismissed');
     if (dismissedAt && Date.now() - parseInt(dismissedAt, 10) < 14 * 24 * 60 * 60 * 1000) return;
 
+    const visits = parseInt(localStorage.getItem('lot_visits') || '0', 10) + 1;
+    localStorage.setItem('lot_visits', String(visits));
 
     if (isIOSDevice()) {
       setIosDevice(true);
@@ -616,13 +612,13 @@ export default function Home() {
     setInstallPromptEvent(null);
 
     if (choice.outcome !== 'accepted') {
-      try { localStorage.setItem('lot_install_dismissed', String(Date.now())); } catch {}
+      localStorage.setItem('lot_install_dismissed', String(Date.now()));
     }
   }
 
   function dismissInstallBanner() {
     setShowInstallBanner(false);
-    try { localStorage.setItem('lot_install_dismissed', String(Date.now())); } catch {}
+    localStorage.setItem('lot_install_dismissed', String(Date.now()));
   }
 
   function showToast(msg) {
@@ -853,7 +849,7 @@ export default function Home() {
   const textSub = dark ? '#a8b0ba' : '#5B6470';
   const border = dark ? 'rgba(140,150,160,0.18)' : 'rgba(140,150,160,0.28)';
 
-
+  if (loading) return <ShowroomSkeleton />;
 
   return (
     <>
@@ -867,7 +863,6 @@ export default function Home() {
         <link rel="manifest" href="/manifest.json" />
       </Head>
 
-      {loading && <ShowroomSkeleton />}
       {lot && <div hidden={screen !== 'lot'}><Showroom lot={lot} branding={branding} error={loadError} activeNav={activeNav} onNavigate={handleNavigate} onAdmin={() => { setPassword(''); setLoginError(false); setScreen(adminLot ? 'admin' : 'login'); }} onGallery={() => { setGalleryPage(0); setScreen('gallery'); }} onOpen={car => { setSelectedCar(car); setPreview(false); setScreen('car'); }} /></div>}
       {screen === 'car' && selectedCar && <CarDetail key={selectedCar.listKey || selectedCar.name} car={selectedCar} phone={preview ? adminLot?.phone : lot?.phone} preview={preview} onBack={() => { setScreen(preview ? 'admin' : 'lot'); if (!preview) setTimeout(() => document.getElementById('inventory')?.scrollIntoView(), 30); }} />}
 

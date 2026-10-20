@@ -1,4 +1,3 @@
-import { isRequestAuthenticated } from '../../lib/auth';
 const BASE = 'https://pmselect.mobile.bg/';
 
 function decodeHtml(value = '') {
@@ -288,9 +287,7 @@ async function fetchHtml(url) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  if (!isRequestAuthenticated(req)) return res.status(401).json({ error: 'Влез в администрацията.' });
   try {
     const overview = await fetchHtml(BASE);
     const hrefs = uniq(
