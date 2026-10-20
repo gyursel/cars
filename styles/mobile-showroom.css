@@ -291,3 +291,26 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 @media(prefers-reduced-motion:reduce){
   .apex-site .apex-bottom-nav .is-active>span{animation:none}
 }
+
+/* Subtle PM Select red-infused ivory: sampled in spirit from the existing
+   crimson button palette, but kept pale enough for premium contrast.
+   The bitmap wordmark, microcopy and all red-button lettering stay intact. */
+.apex-site,.apex-detail{
+  --pm-ivory-blush:#f4e3e6;
+  --pm-ivory-blush-soft:#f6e9eb;
+}
+.apex-site .hero-editorial h1,
+.apex-site .spotlight-copy h2,
+.apex-site .section-heading h2,
+.apex-site .services-grid h3,
+.apex-site .apex-contact h2,
+.apex-site .mode-heading h1,
+.apex-site .contact-screen-heading h1,
+.apex-site .apex-empty h3,
+.apex-site .car-copy h3,
+.apex-detail .detail-info h1,
+.apex-detail .detail-panel h2{color:var(--pm-ivory-blush)}
+.apex-site .spotlight-price,
+.apex-site .car-bottom strong,
+.apex-site .contact-phone,
+.apex-detail .detail-price{color:var(--pm-ivory-blush-soft)}
