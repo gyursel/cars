@@ -159,3 +159,158 @@ html{scroll-padding-top:75px}body{background:#020203}.apex-site,.apex-detail{max
 .apex-bottom-nav button>span{animation:none;white-space:nowrap}
 .apex-bottom-nav button:active{transform:none}
 .mode-home .apex-car,.mode-search .apex-car,.mode-saved .apex-car{animation:none}
+
+/*
+ * PM Select Automotive — restrained typography and tactile state transitions.
+ * The supplied logo is an image; use the already self-hosted, Cyrillic-capable
+ * geometric Manrope for a close brand-inspired text treatment, not a logo redraw.
+ * Preserve microcopy, button typefaces, layout, data and fixed navigation targets.
+ */
+.apex-site,.apex-detail{--pm-display:'Manrope',Arial,sans-serif}
+.apex-site .hero-editorial h1,
+.apex-site .spotlight-copy h2,
+.apex-site .section-heading h2,
+.apex-site .services-grid h3,
+.apex-site .apex-contact h2,
+.apex-site .mode-heading h1,
+.apex-site .contact-screen-heading h1,
+.apex-site .apex-empty h3,
+.apex-detail .detail-info h1,
+.apex-detail .detail-panel h2{
+  font-family:var(--pm-display);
+  font-weight:800;
+  line-height:1.18;
+  letter-spacing:-.042em;
+  text-wrap:pretty;
+}
+.apex-site .hero-editorial h1{font-size:clamp(30px,8.8vw,35px);line-height:1.14;letter-spacing:-.048em}
+.apex-site .spotlight-copy h2{font-size:clamp(23px,6.5vw,27px);line-height:1.2;letter-spacing:-.045em}
+.apex-site .section-heading h2{font-size:25px}
+.apex-site .services-grid h3{font-size:19px}
+.apex-site .apex-contact h2{font-size:27px}
+.apex-site .mode-heading h1,.apex-site .contact-screen-heading h1{font-size:27px}
+.apex-site .apex-empty h3{font-size:22px}
+.apex-site .car-copy h3{
+  font-family:var(--pm-display);
+  font-size:clamp(12.5px,3.35vw,14px);
+  font-weight:800;
+  letter-spacing:-.035em;
+  line-height:1.4;
+}
+.apex-site .mode-search .car-copy h3{font-size:14px}
+.apex-site .spotlight-price,.apex-detail .detail-price{
+  font-family:var(--pm-display);
+  font-size:19px;
+  font-weight:800;
+  letter-spacing:-.035em;
+}
+.apex-site .car-bottom strong{
+  font-family:var(--pm-display);
+  font-size:clamp(12px,3.1vw,13px);
+  font-weight:800;
+  letter-spacing:-.03em;
+}
+.apex-detail .detail-info h1{font-size:clamp(25px,7vw,29px);line-height:1.2;overflow-wrap:anywhere}
+.apex-detail .detail-panel h2{font-size:20px}
+.apex-site .contact-phone{font-family:var(--pm-display);font-size:23px;font-weight:800;letter-spacing:-.035em}
+.apex-site .spotlight-description,.apex-site .mode-heading p,
+.apex-site .contact-screen-heading p,.apex-site .footer-note{
+  font-family:var(--pm-display);
+  font-weight:500;
+  letter-spacing:-.012em;
+}
+
+/* Navigation remains four equal, stationary hit areas (never animate their flex,
+   width, position or transform). Only the selected red layer crossfades. */
+.apex-site .apex-bottom-nav button{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:transparent;
+  transition:color .4s cubic-bezier(.22,1,.36,1),box-shadow .45s cubic-bezier(.22,1,.36,1);
+}
+.apex-site .apex-bottom-nav button::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(135deg,#e7323c,#ba111b);
+  opacity:0;
+  transform:scale(.96);
+  transition:opacity .42s cubic-bezier(.22,1,.36,1),transform .46s cubic-bezier(.22,1,.36,1);
+}
+.apex-site .apex-bottom-nav .is-active{
+  background:transparent;
+  box-shadow:0 4px 18px #cf1f2833;
+}
+.apex-site .apex-bottom-nav .is-active::before{opacity:1;transform:scale(1)}
+.apex-site .apex-bottom-nav .is-active>span{animation:pm-nav-caption-in .38s cubic-bezier(.22,1,.36,1) both}
+.apex-site .apex-bottom-nav button:active{transform:none;opacity:1}
+@keyframes pm-nav-caption-in{
+  from{opacity:.4;filter:blur(2px)}
+  to{opacity:1;filter:blur(0)}
+}
+
+/* Animate red selection as a paint-only fill: labels and hit targets are intact. */
+.apex-site .category-tabs button{
+  background-image:linear-gradient(135deg,#ef3b43,#be141c),linear-gradient(#18181e,#111116);
+  background-size:0% 100%,100% 100%;
+  background-position:left center;
+  background-repeat:no-repeat;
+  transition:background-size .48s cubic-bezier(.22,1,.36,1),color .36s ease,border-color .36s ease,box-shadow .46s ease;
+}
+.apex-site .category-tabs button[aria-pressed=true]{
+  background-image:linear-gradient(135deg,#ef3b43,#be141c),linear-gradient(#18181e,#111116);
+  background-size:100% 100%,100% 100%;
+}
+.apex-detail .detail-tabs button{
+  background-image:linear-gradient(135deg,#ea303b,#bf1019),linear-gradient(#17171c,#17171c);
+  background-size:0% 100%,100% 100%;
+  background-position:left center;
+  background-repeat:no-repeat;
+  transition:background-size .48s cubic-bezier(.22,1,.36,1),color .35s ease,border-color .35s ease,box-shadow .45s ease;
+}
+.apex-detail .detail-tabs button[aria-selected=true]{
+  background-image:linear-gradient(135deg,#ea303b,#bf1019),linear-gradient(#17171c,#17171c);
+  background-size:100% 100%,100% 100%;
+}
+.apex-site .primary{
+  transition:filter .38s ease,box-shadow .42s cubic-bezier(.22,1,.36,1),transform .32s cubic-bezier(.22,1,.36,1);
+}
+@media(hover:hover){.apex-site .primary:hover{filter:brightness(1.07)}}
+.apex-site .primary:active{transform:translateY(1px) scale(.99)}
+@media(max-width:380px){
+  .apex-site .hero-editorial h1{font-size:30px}
+  .apex-site .spotlight-copy h2{font-size:23px}
+  .apex-site .section-heading h2{font-size:23px}
+  .apex-site .car-copy h3{font-size:12.5px}
+  .apex-detail .detail-info h1{font-size:25px}
+}
+@media(prefers-reduced-motion:reduce){
+  .apex-site .apex-bottom-nav .is-active>span{animation:none}
+}
+
+/* Subtle PM Select red-infused ivory: sampled in spirit from the existing
+   crimson button palette, but kept pale enough for premium contrast.
+   The bitmap wordmark, microcopy and all red-button lettering stay intact. */
+.apex-site,.apex-detail{
+  --pm-ivory-blush:#f4e3e6;
+  --pm-ivory-blush-soft:#f6e9eb;
+}
+.apex-site .hero-editorial h1,
+.apex-site .spotlight-copy h2,
+.apex-site .section-heading h2,
+.apex-site .services-grid h3,
+.apex-site .apex-contact h2,
+.apex-site .mode-heading h1,
+.apex-site .contact-screen-heading h1,
+.apex-site .apex-empty h3,
+.apex-site .car-copy h3,
+.apex-detail .detail-info h1,
+.apex-detail .detail-panel h2{color:var(--pm-ivory-blush)}
+.apex-site .spotlight-price,
+.apex-site .car-bottom strong,
+.apex-site .contact-phone,
+.apex-detail .detail-price{color:var(--pm-ivory-blush-soft)}
