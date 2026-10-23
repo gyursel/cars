@@ -4,7 +4,20 @@ export default function Document() {
   return (
     <Html lang="bg">
       <Head>
-
+        <link
+          rel="preload"
+          href="/fonts/manrope-cyrillic.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/manrope-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
       </Head>
       <body>
         <Main />

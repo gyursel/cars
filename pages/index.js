@@ -83,9 +83,9 @@ function SuggestInput({ value, onChange, placeholder, options = [], style = {}, 
         list={listId}
         autoComplete="off"
         title={title || 'Можеш да избереш предложение или да напишеш собствена стойност'}
-        style={{ width: '100%', padding: '7px 30px 7px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none', ...style }}
+        style={{ width: '100%', minHeight: 44, padding: '9px 32px 9px 11px', border: '1px solid #cfd4dc', borderRadius: 8, fontSize: 16, background: '#ffffff', color: '#14171f', outline: 'none', ...style }}
       />
-      <span aria-hidden="true" style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#8A7425', fontSize: 11 }}>▼</span>
+      <span aria-hidden="true" style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#a51c2b', fontSize: 11 }}>▼</span>
       <datalist id={listId}>
         {options.map(opt => <option key={opt} value={opt} />)}
       </datalist>
@@ -132,20 +132,20 @@ function ImageUploader({ value, onChange, allowVideo = false }) {
       {value ? (
         <div style={{ position: 'relative', display: 'inline-block' }}>
           {valueIsVideo ? (
-            <video src={value} muted playsInline style={{ width: 90, height: 65, objectFit: 'cover', borderRadius: 6, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
+            <video src={value} muted playsInline style={{ width: 120, height: 84, objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(140,150,160,0.4)', display: 'block' }} />
           ) : (
-            <img src={value} alt="" style={{ width: 90, height: 65, objectFit: 'cover', borderRadius: 6, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
+            <img src={value} alt="" style={{ width: 120, height: 84, objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(140,150,160,0.4)', display: 'block' }} />
           )}
-          <button onClick={() => inputRef.current.click()} style={{ position: 'absolute', bottom: 3, right: 3, background: 'rgba(10,12,16,0.85)', border: 'none', color: '#f4f0ec', fontSize: 10, padding: '2px 6px', borderRadius: 4, cursor: 'pointer' }}>
+          <button type="button" onClick={() => inputRef.current.click()} style={{ position: 'absolute', bottom: 4, left: 4, background: 'rgba(10,12,16,0.88)', border: '1px solid rgba(255,255,255,0.2)', color: '#f4f0ec', fontSize: 11, minHeight: 28, padding: '3px 8px', borderRadius: 6, cursor: 'pointer' }}>
             Смени
           </button>
-          <button onClick={() => onChange('')} style={{ position: 'absolute', top: 3, right: 3, background: 'rgba(200,60,60,0.9)', border: 'none', color: 'white', fontSize: 13, width: 18, height: 18, borderRadius: '50%', lineHeight: '18px', textAlign: 'center', padding: 0, cursor: 'pointer' }}>
+          <button type="button" onClick={() => onChange('')} aria-label="Премахни файла" style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(208,24,36,0.92)', border: 'none', color: 'white', fontSize: 15, width: 28, height: 28, minHeight: 28, borderRadius: '50%', lineHeight: '28px', textAlign: 'center', padding: 0, cursor: 'pointer' }}>
             ×
           </button>
         </div>
       ) : (
-        <button onClick={() => inputRef.current.click()} disabled={uploading}
-          style={{ padding: '5px 12px', border: '0.5px dashed rgba(140,150,160,0.5)', borderRadius: 6, background: 'transparent', color: uploading ? '#888' : '#a51c2b', fontSize: 12, cursor: uploading ? 'default' : 'pointer' }}>
+        <button type="button" onClick={() => inputRef.current.click()} disabled={uploading}
+          style={{ minHeight: 44, padding: '10px 16px', border: '1px dashed rgba(165,28,43,0.45)', borderRadius: 10, background: 'rgba(165,28,43,0.04)', color: uploading ? '#888' : '#a51c2b', fontSize: 13, fontWeight: 600, cursor: uploading ? 'default' : 'pointer' }}>
           {uploading ? '⏳ Качване...' : allowVideo ? '📷 Добави снимка/видео' : '📷 Добави снимка'}
         </button>
       )}
@@ -196,15 +196,18 @@ function FullGalleryUploader({ value = [], onChange }) {
       <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }} />
 
       <button
+        type="button"
         onClick={() => inputRef.current.click()}
         disabled={uploading || (value || []).length >= 30}
         style={{
-          padding: '8px 12px',
-          border: '0.5px dashed rgba(140,150,160,0.5)',
-          borderRadius: 8,
-          background: 'transparent',
+          minHeight: 44,
+          padding: '10px 14px',
+          border: '1px dashed rgba(165,28,43,0.45)',
+          borderRadius: 10,
+          background: 'rgba(165,28,43,0.04)',
           color: uploading ? '#888' : '#a51c2b',
           fontSize: 13,
+          fontWeight: 600,
           cursor: uploading ? 'default' : 'pointer',
           width: '100%'
         }}
@@ -212,19 +215,19 @@ function FullGalleryUploader({ value = [], onChange }) {
         {uploading ? '⏳ Качване...' : `📚 Качи снимки на автокъщата (${(value || []).length}/30)`}
       </button>
 
-      <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6, lineHeight: 1.45 }}>
+      <div style={{ fontSize: 12, color: '#5B6470', marginTop: 6, lineHeight: 1.5 }}>
         Показват се в раздел „Галерия на автокъщата“.
       </div>
 
       {(value || []).length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 10, marginTop: 10 }}>
           {(value || []).map((url, i) => (
             <div key={url + i} style={{ position: 'relative' }}>
-              <img src={url} alt={`Снимка ${i + 1}`} style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 8, border: '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
-              <div style={{ position: 'absolute', left: 5, bottom: 5, background: 'rgba(10,12,16,0.8)', color: '#f4f0ec', fontSize: 10, padding: '2px 6px', borderRadius: 10 }}>
+              <img src={url} alt={`Снимка ${i + 1}`} style={{ width: '100%', height: 92, objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(140,150,160,0.35)', display: 'block' }} />
+              <div style={{ position: 'absolute', left: 6, bottom: 6, background: 'rgba(10,12,16,0.84)', color: '#f4f0ec', fontSize: 11, padding: '2px 7px', borderRadius: 10 }}>
                 #{i + 1}
               </div>
-              <button onClick={() => removeImage(i)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,60,60,0.92)', border: 'none', color: 'white', fontSize: 13, width: 20, height: 20, borderRadius: '50%', lineHeight: '20px', textAlign: 'center', padding: 0, cursor: 'pointer' }}>
+              <button type="button" onClick={() => removeImage(i)} aria-label={`Премахни снимка ${i + 1}`} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(208,24,36,0.92)', border: 'none', color: 'white', fontSize: 14, width: 26, height: 26, minHeight: 26, borderRadius: '50%', lineHeight: '26px', textAlign: 'center', padding: 0, cursor: 'pointer' }}>
                 ×
               </button>
             </div>
@@ -287,26 +290,27 @@ function CarGalleryUploader({ value = [], onChange }) {
   }
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 12 }}>
       <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }} />
       <button
+        type="button"
         onClick={() => inputRef.current.click()}
         disabled={uploading || images.length >= 15}
-        style={{ width: '100%', padding: '8px 12px', border: '0.5px dashed rgba(140,150,160,0.5)', borderRadius: 8, background: 'transparent', color: uploading ? '#888' : '#a51c2b', fontSize: 12, cursor: uploading ? 'default' : 'pointer' }}
+        style={{ width: '100%', minHeight: 44, padding: '10px 14px', border: '1px dashed rgba(165,28,43,0.45)', borderRadius: 10, background: 'rgba(165,28,43,0.04)', color: uploading ? '#888' : '#a51c2b', fontSize: 13, fontWeight: 600, cursor: uploading ? 'default' : 'pointer' }}
       >
         {uploading ? '⏳ Качване...' : `📷 Снимки на автомобила (${images.length}/15)`}
       </button>
-      <div style={{ fontSize: 10.5, color: '#6B7280', marginTop: 5 }}>
+      <div style={{ fontSize: 12, color: '#5B6470', marginTop: 6 }}>
         Първата снимка е основната снимка в каталога. Натисни „Основна“ на друга снимка, за да я смениш.
       </div>
       {images.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))', gap: 8, marginTop: 9 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(108px, 1fr))', gap: 10, marginTop: 10 }}>
           {images.map((url, i) => (
             <div key={url + i} style={{ position: 'relative', minWidth: 0 }}>
-              <img src={url} alt={`Автомобил ${i + 1}`} style={{ width: '100%', height: 78, objectFit: 'cover', borderRadius: 7, border: i === 0 ? '2px solid #a51c2b' : '0.5px solid rgba(140,150,160,0.35)', display: 'block' }} />
-              <button onClick={() => removeImage(i)} title="Изтрий снимката" style={{ position: 'absolute', top: 3, right: 3, width: 19, height: 19, borderRadius: '50%', border: 'none', background: 'rgba(200,60,60,.94)', color: '#fff', cursor: 'pointer', lineHeight: '19px', padding: 0 }}>×</button>
-              <button aria-label={`Премести снимка ${i + 1} наляво`} disabled={i === 0} onClick={() => { const next = [...images]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; onChange(next); }} style={{position:'absolute',top:3,left:3,background:'#12141a',color:'white',border:0,padding:'2px 7px'}}>←</button>
-              <button onClick={() => makeCover(i)} disabled={i === 0} style={{ position: 'absolute', left: 3, bottom: 3, border: 'none', borderRadius: 5, padding: '2px 5px', fontSize: 9, cursor: i === 0 ? 'default' : 'pointer', background: i === 0 ? '#a51c2b' : 'rgba(10,12,16,.82)', color: i === 0 ? '#12151A' : '#f4f0ec' }}>
+              <img src={url} alt={`Автомобил ${i + 1}`} style={{ width: '100%', height: 86, objectFit: 'cover', borderRadius: 9, border: i === 0 ? '2px solid #d81e28' : '1px solid rgba(140,150,160,0.35)', display: 'block' }} />
+              <button type="button" onClick={() => removeImage(i)} title="Изтрий снимката" aria-label={`Изтрий снимка ${i + 1}`} style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, minHeight: 24, borderRadius: '50%', border: 'none', background: 'rgba(208,24,36,.94)', color: '#fff', cursor: 'pointer', lineHeight: '24px', padding: 0 }}>×</button>
+              <button type="button" aria-label={`Премести снимка ${i + 1} наляво`} disabled={i === 0} onClick={() => { const next = [...images]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; onChange(next); }} style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(10,12,16,0.86)', color: 'white', border: 0, borderRadius: 5, minHeight: 24, padding: '2px 7px', fontSize: 12 }}>←</button>
+              <button type="button" onClick={() => makeCover(i)} disabled={i === 0} style={{ position: 'absolute', left: 4, bottom: 4, border: 'none', borderRadius: 6, minHeight: 24, padding: '2px 7px', fontSize: 10, fontWeight: 600, cursor: i === 0 ? 'default' : 'pointer', background: i === 0 ? '#d81e28' : 'rgba(10,12,16,.86)', color: '#ffffff' }}>
                 {i === 0 ? 'Основна' : 'Направи основна'}
               </button>
             </div>
@@ -321,19 +325,30 @@ function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) 
   const q = search.trim().toLowerCase();
   const filtered = q ? catalog.filter(c => (c.name || '').toLowerCase().includes(q)) : catalog;
 
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Каталог с автомобили"
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(6,8,10,0.6)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(6,8,12,0.72)', backdropFilter: 'blur(8px)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#F5F6F7', width: '100%', maxWidth: 480, maxHeight: '82vh', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 -12px 40px rgba(0,0,0,0.4)' }}
+        style={{ background: '#F5F6F8', width: '100%', maxWidth: 520, maxHeight: '84vh', borderRadius: '22px 22px 0 0', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 -16px 48px rgba(0,0,0,0.45)' }}
       >
-        <div style={{ padding: '1rem 1.1rem 0.75rem', borderBottom: '0.5px solid rgba(140,150,160,0.28)' }}>
+        <div style={{ padding: '1.1rem 1.25rem 0.9rem', borderBottom: '1px solid rgba(140,150,160,0.28)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontSize: 15, fontWeight: 600, color: '#12151A' }}>📚 Каталог с автомобили</div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#5B6470', fontSize: 22, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#12151A' }}>📚 Каталог с автомобили</div>
+            <button type="button" onClick={onClose} aria-label="Затвори каталога" style={{ background: 'none', border: 'none', color: '#5B6470', fontSize: 24, width: 44, height: 44, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
           </div>
 
           <input
@@ -341,11 +356,11 @@ function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) 
             value={search}
             onChange={e => onSearch(e.target.value)}
             placeholder="Търси по марка/модел..." aria-label="Търси по марка/модел..."
-            style={{ width: '100%', padding: '9px 12px', border: '0.5px solid rgba(140,150,160,0.4)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'white' }}
+            style={{ width: '100%', minHeight: 44, padding: '10px 14px', border: '1px solid rgba(140,150,160,0.4)', borderRadius: 10, fontSize: 16, outline: 'none', background: 'white', color: '#12151A' }}
           />
         </div>
 
-        <div style={{ overflowY: 'auto', padding: '0.5rem 1.1rem 1.25rem' }}>
+        <div style={{ overflowY: 'auto', padding: '0.6rem 1.25rem 1.5rem' }}>
           {loading && (
             <div style={{ textAlign: 'center', color: '#a51c2b', fontSize: 13, padding: '1.75rem 0' }}>⏳ Зареждане...</div>
           )}
@@ -359,25 +374,26 @@ function CarPickerModal({ catalog, loading, search, onSearch, onAdd, onClose }) 
           )}
 
           {filtered.map(c => (
-            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '0.5px solid rgba(140,150,160,0.18)' }}>
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(140,150,160,0.18)' }}>
               {c.image ? (
-                <img src={c.image} alt="" style={{ width: 46, height: 46, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                <img src={c.image} alt="" style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
               ) : (
-                <div style={{ width: 46, height: 46, borderRadius: 8, background: '#e6e8eb', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🚗</div>
+                <div style={{ width: 52, height: 52, borderRadius: 10, background: '#e6e8eb', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🚗</div>
               )}
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#12151A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#12151A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {cleanCarName(c.name)}
                 </div>
-                <div style={{ fontSize: 11, color: '#5B6470' }}>
+                <div style={{ fontSize: 12, color: '#5B6470', marginTop: 2 }}>
                   {c.category ? `${c.category} · ` : ''}{c.price ? `${c.price} €` : ''}
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => onAdd(c)}
-                style={{ background: '#12151A', color: '#f4f0ec', border: 'none', borderRadius: 6, padding: '7px 12px', fontSize: 12, fontWeight: 500, cursor: 'pointer', flexShrink: 0 }}
+                style={{ background: '#12151A', color: '#f4f0ec', border: 'none', borderRadius: 8, minHeight: 44, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
               >
                 + Добави
               </button>
@@ -396,32 +412,30 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
         position: 'fixed',
         left: 12,
         right: 12,
-        bottom: 88,
+        bottom: 94,
         zIndex: 150,
-        maxWidth: 440,
+        maxWidth: 460,
         margin: '0 auto',
-        background: dark
-          ? 'linear-gradient(135deg, rgba(27,31,38,0.98), rgba(10,12,16,0.98))'
-          : 'linear-gradient(135deg, #fff7dc, #ffffff)',
-        border: '1px solid rgba(201,162,39,0.4)',
-        borderRadius: 14,
-        padding: '12px 12px 12px 14px',
+        background: 'rgba(18, 22, 31, 0.92)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255, 255, 255, 0.14)',
+        borderRadius: 16,
+        padding: '14px 14px 14px 16px',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        boxShadow: '0 14px 34px rgba(0,0,0,0.3)',
-        animation: 'fadeUp 0.4s ease',
+        boxShadow: '0 20px 44px rgba(0,0,0,0.55)',
       }}
     >
-      <div style={{ width: 42, height: 42, borderRadius: 10, background: '#12151A', color: '#f4f0ec', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(216, 30, 40, 0.18)', border: '1px solid rgba(216, 30, 40, 0.35)', color: '#f4f0ec', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
         🚗
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: dark ? '#f4f0ec' : '#12151A' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#f4f5f7' }}>
           Добави {dealershipName} на началния екран
         </div>
-        <div style={{ fontSize: 11, color: dark ? '#a8b0ba' : '#5B6470', marginTop: 2, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 11.5, color: '#a6aebc', marginTop: 3, lineHeight: 1.45 }}>
           {iosDevice
             ? 'Тапни бутона Споделяне ⬆️ в Safari, после „Добави към Начален екран“'
             : 'Бърз достъп до автомобилите, без да търсиш браузъра'}
@@ -430,16 +444,19 @@ function InstallBanner({ dark, iosDevice, dealershipName, onInstall, onDismiss }
 
       {!iosDevice && (
         <button
+          type="button"
           onClick={onInstall}
-          style={{ background: '#12151A', color: '#f4f0ec', border: 'none', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
+          style={{ background: '#d81e28', color: '#ffffff', border: 'none', borderRadius: 10, minHeight: 44, padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
         >
           Добави
         </button>
       )}
 
       <button
+        type="button"
+        aria-label="Затвори банера"
         onClick={onDismiss}
-        style={{ background: 'none', border: 'none', color: dark ? '#8f98a3' : '#5B6470', fontSize: 18, cursor: 'pointer', flexShrink: 0, padding: 4, lineHeight: 1 }}
+        style={{ background: 'none', border: 'none', color: '#a6aebc', fontSize: 20, width: 44, height: 44, cursor: 'pointer', flexShrink: 0, padding: 0, lineHeight: 1 }}
       >
         ×
       </button>
@@ -885,34 +902,35 @@ export default function Home() {
         }
 
         return (
-          <div style={{ background: '#06070a', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(6,7,10,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(201,162,39,0.25)', padding: '0.9rem 1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <button onClick={() => setScreen('lot')} style={{ background: 'none', border: '1px solid rgba(232,184,48,0.3)', color: '#f4f0ec', padding: '7px 12px', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>
+          <div style={{ background: '#07080b', minHeight: '100svh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(12,15,22,0.88)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <button type="button" onClick={() => setScreen('lot')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.16)', color: '#f4f5f7', minHeight: 44, padding: '8px 16px', borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 ← Назад
               </button>
 
               <div style={{ textAlign: 'center' }}>
-                <div style={{ color: '#f4f0ec', fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                  Галерия
+                <div style={{ color: '#f4f5f7', fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                  Галерия на шоурума
                 </div>
-                <div style={{ color: 'rgba(232,184,48,0.55)', fontSize: 11, marginTop: 2, letterSpacing: '0.05em' }}>
+                <div style={{ color: '#a6aebc', fontSize: 11.5, marginTop: 2 }}>
                   Снимка {galleryPage + 1} от {total}
                 </div>
               </div>
 
-              <div style={{ width: 68 }} />
+              <div style={{ width: 78 }} />
             </div>
 
             <div
-              style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px 14px', overflow: 'hidden' }}
+              style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', overflow: 'hidden' }}
               onTouchStart={onTouchStart}
               onTouchEnd={onTouchEnd}
             >
               {total > 1 && (
                 <button
+                  type="button"
                   onClick={() => goTo(galleryPage - 1)}
                   aria-label="Предишна снимка"
-                  style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(232,184,48,0.3)', background: 'rgba(6,7,10,0.55)', color: '#f4f0ec', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}
+                  style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 46, height: 46, borderRadius: 14, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(12,15,22,0.75)', color: '#f4f5f7', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}
                 >
                   ‹
                 </button>
@@ -920,13 +938,13 @@ export default function Home() {
 
               <div
                 style={{
-                  maxWidth: 560,
+                  maxWidth: 880,
                   width: '100%',
-                  borderRadius: 16,
+                  borderRadius: 22,
                   overflow: 'hidden',
-                  background: '#12151a',
-                  boxShadow: '0 24px 60px rgba(0,0,0,0.6), 0 2px 0 rgba(232,184,48,0.06) inset',
-                  border: '1px solid rgba(201,162,39,0.35)',
+                  background: '#11141d',
+                  boxShadow: '0 28px 70px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.14) inset',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   aspectRatio: '4 / 3'
                 }}
               >
@@ -935,9 +953,10 @@ export default function Home() {
 
               {total > 1 && (
                 <button
+                  type="button"
                   onClick={() => goTo(galleryPage + 1)}
                   aria-label="Следваща снимка"
-                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(232,184,48,0.3)', background: 'rgba(6,7,10,0.55)', color: '#f4f0ec', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)' }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', zIndex: 5, width: 46, height: 46, borderRadius: 14, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(12,15,22,0.75)', color: '#f4f5f7', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}
                 >
                   ›
                 </button>
@@ -945,20 +964,22 @@ export default function Home() {
             </div>
 
             {total > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '4px 0 22px', flexWrap: 'wrap', maxWidth: 480, margin: '0 auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '8px 16px 28px', flexWrap: 'wrap', maxWidth: 560, margin: '0 auto' }}>
                 {pages.map((_, i) => (
                   <button
+                    type="button"
                     key={i}
                     onClick={() => goTo(i)}
                     aria-label={`Снимка ${i + 1}`}
                     style={{
-                      width: i === galleryPage ? 20 : 6,
-                      height: 6,
-                      borderRadius: 3,
+                      width: i === galleryPage ? 26 : 10,
+                      height: 10,
+                      minHeight: 10,
+                      borderRadius: 5,
                       border: 'none',
                       cursor: 'pointer',
                       transition: 'width 0.25s ease, background 0.25s ease',
-                      background: i === galleryPage ? '#f4f0ec' : 'rgba(232,184,48,0.28)'
+                      background: i === galleryPage ? '#d81e28' : 'rgba(255,255,255,0.22)'
                     }}
                   />
                 ))}
@@ -968,125 +989,162 @@ export default function Home() {
         );
       })()}
 
-      {screen === 'login' && <main className="apex-login"><Mark/><form onSubmit={e => { e.preventDefault(); doLogin(); }}><h1>Добре дошъл.</h1><p>Вход в администрацията на PMSELECT CARS.</p><label>Парола<input autoComplete="current-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label><button className="button primary" disabled={loginBusy}>{loginBusy ? 'Проверка…' : 'Влез в администрацията ↗'}</button>{loginError && <p role="alert">{loginError}</p>}<button type="button" className="text-button" onClick={() => setScreen('lot')}>← Назад към автомобилите</button></form></main>}
+      {screen === 'login' && <main className="apex-login"><div className="apex-login-card"><Mark/><form onSubmit={e => { e.preventDefault(); doLogin(); }}><h1>Добре дошъл.</h1><p>Вход в администрацията на PMSELECT CARS.</p><label>Парола<input autoComplete="current-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></label><button className="button primary" disabled={loginBusy}>{loginBusy ? 'Проверка…' : 'Влез в администрацията ↗'}</button>{loginError && <p role="alert">{loginError}</p>}<button type="button" className="text-button" onClick={() => setScreen('lot')}>← Назад към автомобилите</button></form></div></main>}
 
       {screen === 'admin' && adminLot && (
-        <div className="apex-admin" style={{ background: '#F5F6F7', minHeight: '100vh' }}>
-          <div style={{ background: '#12151A', color: '#f4f0ec', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button onClick={() => setScreen('lot')} style={{ background: 'none', border: '0.5px solid rgba(232,184,48,0.35)', color: 'rgba(232,184,48,0.85)', padding: '5px 10px', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}>
+        <div className="apex-admin" style={{ background: '#F3F5F8', minHeight: '100vh' }}>
+          <div className="admin-topbar" style={{ background: '#0c0e14', color: '#f4f5f7', padding: '0.9rem 1.25rem', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            <button type="button" onClick={() => setScreen('lot')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.2)', color: '#f4f5f7', minHeight: 44, padding: '8px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               ← Автомобили
             </button>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>Управление на автокъщата</span><button className="text-button" onClick={logout}>Изход</button>
-            <span style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(232,184,48,0.8)' }}>
+            <span style={{ fontSize: 15, fontWeight: 700 }}>Управление на автокъщата</span>
+            <button type="button" className="text-button" onClick={logout} style={{ minHeight: 44, padding: '8px 12px', color: '#ff7b84', fontWeight: 600 }}>Изход</button>
+            <span style={{ marginLeft: 'auto', fontSize: 12.5, fontWeight: 600, color: '#a6aebc', background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: 999 }}>
               👁 Днес: {todayViews === null ? '…' : todayViews}
             </span>
           </div>
 
-          <div style={{ padding: '1.25rem' }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a51c2b', marginBottom: 10 }}>
-                Автокъща
+          <div style={{ padding: '1.5rem 1.25rem' }}>
+            <div className="admin-branding" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a51c2b' }}>
+                  Настройки на автокъщата
+                </div>
+                <button
+                  type="button"
+                  onClick={importPmSelect}
+                  disabled={pmImporting}
+                  style={{ background: '#14171f', color: '#f4f5f7', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, minHeight: 44, padding: '8px 14px', fontSize: 12.5, fontWeight: 600, cursor: pmImporting ? 'wait' : 'pointer' }}
+                >
+                  {pmImporting ? '⏳ Импортиране от Mobile.bg...' : '🔄 Импортирай от PM SELECT Mobile.bg'}
+                </button>
               </div>
 
-              <input
-                value={adminLot.dealershipName}
-                onChange={e => setAdminLot({ ...adminLot, dealershipName: e.target.value })}
-                placeholder="Име на автокъщата" aria-label="Име на автокъщата"
-                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: 'white', outline: 'none', marginBottom: 8 }}
-              />
+              {pmImportMsg && (
+                <div style={{ fontSize: 12.5, padding: '10px 12px', borderRadius: 8, marginBottom: 12, background: pmImportMsg.startsWith('Грешка') ? '#fdecea' : '#edf7ed', color: pmImportMsg.startsWith('Грешка') ? '#b71c1c' : '#1b5e20' }}>
+                  {pmImportMsg}
+                </div>
+              )}
 
-              <input
-                value={adminLot.phone || ''}
-                onChange={e => setAdminLot({ ...adminLot, phone: e.target.value })}
-                placeholder="Телефон за връзка" aria-label="Телефон за връзка"
-                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: 'white', outline: 'none', marginBottom: 8 }}
-              />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 10 }}>
+                <input
+                  value={adminLot.dealershipName}
+                  onChange={e => setAdminLot({ ...adminLot, dealershipName: e.target.value })}
+                  placeholder="Име на автокъщата" aria-label="Име на автокъщата"
+                  style={{ width: '100%', minHeight: 44, padding: '10px 12px', border: '1px solid #cfd4dc', borderRadius: 10, fontSize: 16, background: 'white', outline: 'none' }}
+                />
+
+                <input
+                  value={adminLot.phone || ''}
+                  onChange={e => setAdminLot({ ...adminLot, phone: e.target.value })}
+                  placeholder="Телефон за връзка" aria-label="Телефон за връзка"
+                  style={{ width: '100%', minHeight: 44, padding: '10px 12px', border: '1px solid #cfd4dc', borderRadius: 10, fontSize: 16, background: 'white', outline: 'none' }}
+                />
+              </div>
 
               <input
                 value={adminLot.footerNote}
                 onChange={e => setAdminLot({ ...adminLot, footerNote: e.target.value })}
                 placeholder="Бележка в долната част" aria-label="Бележка в долната част"
-                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: 'white', outline: 'none' }}
+                style={{ width: '100%', minHeight: 44, padding: '10px 12px', border: '1px solid #cfd4dc', borderRadius: 10, fontSize: 16, background: 'white', outline: 'none' }}
               />
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '10px 12px', border: '0.5px solid rgba(201,162,39,0.4)', borderRadius: 8, background: adminLot.demoExpired ? '#FBF6E4' : 'white', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, minHeight: 44, padding: '10px 14px', border: '1px solid #d5d9e0', borderRadius: 10, background: adminLot.demoExpired ? '#fff4f4' : '#f8f9fb', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={!!adminLot.demoExpired}
                   onChange={e => setAdminLot({ ...adminLot, demoExpired: e.target.checked })}
                 />
-                <span style={{ fontSize: 13, color: '#12151A' }}>
+                <span style={{ fontSize: 13.5, color: '#14171f', fontWeight: 500 }}>
                   Покажи на сайта, че пробният период е приключил (демо версия)
                 </span>
               </label>
 
-              <div style={{ marginTop: 10 }}>
-                <div style={{ fontSize: 11, color: '#a51c2b', marginBottom: 6 }}>ФОН НА ХЕДЪРА (СНИМКА ИЛИ MP4)</div>
-                <ImageUploader value={adminLot.heroImage || ''} onChange={url => setAdminLot({ ...adminLot, heroImage: url })} allowVideo />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14, marginTop: 16 }}>
+                <div className="admin-subcard">
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#a51c2b', marginBottom: 4 }}>ФОН НА ХЕДЪРА (СНИМКА ИЛИ MP4)</div>
+                  <p style={{ fontSize: 12, color: '#5b6470', marginBottom: 8 }}>Опционално видео или широкоформатен банер за началната секция.</p>
+                  <ImageUploader value={adminLot.heroImage || ''} onChange={url => setAdminLot({ ...adminLot, heroImage: url })} allowVideo />
+                </div>
+
+                <div className="admin-subcard">
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#a51c2b', marginBottom: 4 }}>НАЧАЛЕН ЕКРАН (HERO ВИЗУАЛ)</div>
+                  <p style={{ fontSize: 12, color: '#5b6470', marginBottom: 8 }}>Основна фотография за 3D сцената на началния екран.</p>
+                  <ImageUploader value={adminLot.introImage || ''} onChange={url => setAdminLot({ ...adminLot, introImage: url })}/>
+                </div>
+
+                <div className="admin-subcard">
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#a51c2b', marginBottom: 4 }}>ЛОГО И НАСЛЕДЕН БАНЕР</div>
+                  <p style={{ fontSize: 12, color: '#5b6470', marginBottom: 8 }}>Допълнителен банер или лого в настройките на автокъщата.</p>
+                  <ImageUploader value={adminLot.logoImage ?? branding.logoImage ?? ''} onChange={url => setAdminLot({ ...adminLot, logoImage: url })}/>
+                </div>
               </div>
 
-              <div className="admin-branding"><h2>Начален екран</h2><p>Вертикална фотография за началния екран. При празно поле се използва тъмният автомобил от избрания визуален пример.</p><ImageUploader value={adminLot.introImage || ''} onChange={url => setAdminLot({ ...adminLot, introImage: url })}/></div>
-              <div className="admin-branding"><h2>Лого и наследен банер</h2><p>Фонът по-горе има приоритет. Ако е празен, използваме съществуващия банер от настройките, а след него — снимка от селекцията.</p><ImageUploader value={adminLot.logoImage ?? branding.logoImage ?? ''} onChange={url => setAdminLot({ ...adminLot, logoImage: url })}/></div>
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 11, color: '#a51c2b', marginBottom: 6 }}>ГАЛЕРИЯ НА АВТОКЪЩАТА — ДО 30 СНИМКИ</div>
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: '#a51c2b', marginBottom: 6 }}>ГАЛЕРИЯ НА АВТОКЪЩАТА — ДО 30 СНИМКИ</div>
                 <FullGalleryUploader value={adminLot.fullGalleryImages || []} onChange={imgs => setAdminLot({ ...adminLot, fullGalleryImages: imgs })} />
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.5rem', background: 'white', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 10, padding: '0.9rem 1rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a51c2b', marginBottom: 10 }}>
+            <div className="admin-branding" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a51c2b', marginBottom: 12 }}>
                 Смяна на парола за админ
               </div>
 
-              <input
-                type="password"
-                value={newPass1}
-                onChange={e => setNewPass1(e.target.value)}
-                placeholder="Нова парола" aria-label="Нова парола"
-                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: '#F9FAFA', outline: 'none', marginBottom: 8 }}
-              />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 10 }}>
+                <input
+                  type="password"
+                  value={newPass1}
+                  onChange={e => setNewPass1(e.target.value)}
+                  placeholder="Нова парола" aria-label="Нова парола"
+                  style={{ width: '100%', minHeight: 44, padding: '10px 12px', border: '1px solid #cfd4dc', borderRadius: 10, fontSize: 16, background: '#ffffff', outline: 'none' }}
+                />
 
-              <input
-                type="password"
-                value={newPass2}
-                onChange={e => setNewPass2(e.target.value)}
-                placeholder="Потвърди новата парола" aria-label="Потвърди новата парола"
-                style={{ width: '100%', padding: '8px 12px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 8, fontSize: 14, background: '#F9FAFA', outline: 'none', marginBottom: 8 }}
-              />
+                <input
+                  type="password"
+                  value={newPass2}
+                  onChange={e => setNewPass2(e.target.value)}
+                  placeholder="Потвърди новата парола" aria-label="Потвърди новата парола"
+                  style={{ width: '100%', minHeight: 44, padding: '10px 12px', border: '1px solid #cfd4dc', borderRadius: 10, fontSize: 16, background: '#ffffff', outline: 'none' }}
+                />
+              </div>
 
               {passMsg && (
-                <div style={{ fontSize: 12, color: passMsg.includes('успешно') ? '#2e7d32' : '#c0392b', marginBottom: 8 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: passMsg.includes('успешно') ? '#2e7d32' : '#c0392b', marginBottom: 10 }}>
                   {passMsg}
                 </div>
               )}
 
               <button
+                type="button"
                 onClick={changePassword}
                 disabled={passSaving}
-                style={{ background: '#12151A', color: '#f4f0ec', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, cursor: 'pointer', opacity: passSaving ? 0.6 : 1 }}
+                style={{ background: '#14171f', color: '#f4f5f7', border: 'none', minHeight: 44, padding: '10px 18px', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', opacity: passSaving ? 0.6 : 1 }}
               >
                 {passSaving ? 'Запис...' : 'Смени паролата'}
               </button>
             </div>
 
-            {adminLot.sections.length === 0 && <button className="button primary" onClick={() => addSectionAfter(-1)}>+ Първа категория</button>}
+            {adminLot.sections.length === 0 && <button type="button" className="button primary" onClick={() => addSectionAfter(-1)}>+ Първа категория</button>}
             {adminLot.sections.map((sec, si) => (
-              <div key={si} style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <div key={si} style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                   <div style={{ flex: 1 }}>
                     <SuggestInput
                       value={sec.label}
                       onChange={e => updateSectionLabel(si, e.target.value)}
                       placeholder="Категория" aria-label="Категория"
                       options={TECH_SUGGESTIONS.category}
-                      style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a51c2b', background: 'white' }}
+                      style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#a51c2b', background: 'white' }}
                     />
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => deleteSection(si)}
                     title="Изтрий категорията"
-                    style={{ background: 'none', border: 'none', color: '#E24B4A', fontSize: 18, opacity: 0.6, padding: '0 4px', cursor: 'pointer' }}
+                    aria-label={`Изтрий категория ${sec.label}`}
+                    style={{ background: '#ffffff', border: '1px solid #e0e4eb', borderRadius: 10, color: '#d81e28', fontSize: 20, width: 44, height: 44, cursor: 'pointer' }}
                   >
                     ×
                   </button>
@@ -1095,27 +1153,31 @@ export default function Home() {
                 {sec.cars.map((c, ci) => {
                   const accent = CAR_CARD_ACCENTS[ci % CAR_CARD_ACCENTS.length];
                   return (
-                  <div key={ci} className="admin-car" style={{ background: accent.tint, border: '0.5px solid rgba(140,150,160,0.3)', borderLeft: `4px solid ${accent.border}`, borderRadius: 10, padding: '0.75rem 1rem', marginBottom: 8 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.06em', color: accent.border, marginBottom: 6 }}>
+                  <div key={ci} className="admin-car" style={{ background: '#ffffff', border: '1px solid #dfe3ea', borderLeft: `4px solid ${accent.border}`, borderRadius: 14, padding: '1.1rem 1.25rem', marginBottom: 14 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', color: accent.border, marginBottom: 6 }}>
                       КОЛА {ci + 1}{c.name ? ` · ${c.name}` : ''}
                     </div>
-                    <div className="admin-publication"><label><input type="checkbox" checked={c.visible !== false} onChange={e => updateCar(si, ci, 'visible', e.target.checked)}/>Публична обява</label><label><input type="checkbox" checked={!!c.featured} onChange={e => updateCar(si, ci, 'featured', e.target.checked)}/>Избран автомобил</label><button className="text-button" onClick={() => { setSelectedCar({ ...c, sectionLabel: sec.label }); setPreview(true); setScreen('car'); }}>Преглед ↗</button></div>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <div className="admin-publication">
+                      <label><input type="checkbox" checked={c.visible !== false} onChange={e => updateCar(si, ci, 'visible', e.target.checked)}/>Публична обява</label>
+                      <label><input type="checkbox" checked={!!c.featured} onChange={e => updateCar(si, ci, 'featured', e.target.checked)}/>Избран автомобил</label>
+                      <button type="button" className="text-button" onClick={() => { setSelectedCar({ ...c, sectionLabel: sec.label }); setPreview(true); setScreen('car'); }} style={{ fontWeight: 700, color: '#a51c2b', minHeight: 44, padding: '8px 12px' }}>Преглед ↗</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                       <input
                         value={c.name}
                         onChange={e => updateCar(si, ci, 'name', e.target.value)}
                         placeholder="Марка и модел" aria-label="Марка и модел"
-                        style={{ flex: 1, padding: '6px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none' }}
+                        style={{ flex: '1 1 200px', minHeight: 44, padding: '9px 12px', border: '1px solid #cfd4dc', borderRadius: 8, fontSize: 16, background: '#ffffff', outline: 'none' }}
                       />
 
                       <input
                         value={c.price}
                         onChange={e => updateCar(si, ci, 'price', e.target.value)}
                         placeholder="Цена €" aria-label="Цена €"
-                        style={{ width: 80, padding: '6px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none' }}
+                        style={{ width: 120, minHeight: 44, padding: '9px 12px', border: '1px solid #cfd4dc', borderRadius: 8, fontSize: 16, background: '#ffffff', outline: 'none' }}
                       />
 
-                      <button onClick={() => deleteCar(si, ci)} style={{ background: 'none', border: 'none', color: '#E24B4A', fontSize: 20, opacity: 0.6, padding: '0 4px', cursor: 'pointer' }}>
+                      <button type="button" onClick={() => deleteCar(si, ci)} aria-label={`Изтрий автомобил ${c.name || ci + 1}`} style={{ background: '#fff5f5', border: '1px solid #f5c2c7', borderRadius: 8, color: '#d81e28', fontSize: 20, width: 44, height: 44, cursor: 'pointer' }}>
                         ×
                       </button>
                     </div>
@@ -1124,12 +1186,12 @@ export default function Home() {
                       value={c.desc}
                       onChange={e => updateCar(si, ci, 'desc', e.target.value)}
                       placeholder="Описание (екстри, състояние)" aria-label="Описание (екстри, състояние)"
-                      style={{ width: '100%', padding: '6px 8px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 4, fontSize: 13, background: '#F9FAFA', outline: 'none', marginBottom: 6, display: 'block' }}
+                      style={{ width: '100%', minHeight: 44, padding: '9px 12px', border: '1px solid #cfd4dc', borderRadius: 8, fontSize: 16, background: '#ffffff', outline: 'none', marginBottom: 10, display: 'block' }}
                     />
 
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: '#374151', margin: '8px 0 3px' }}>ТЕХНИЧЕСКИ ДАННИ</div>
-                    <div style={{ fontSize: 10.5, color: '#7A8088', marginBottom: 7 }}>Натисни върху поле и избери от падащите предложения. Можеш и да въведеш собствена стойност.</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6, marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', color: '#1f2937', margin: '12px 0 4px' }}>ТЕХНИЧЕСКИ ДАННИ</div>
+                    <div style={{ fontSize: 12, color: '#5b6470', marginBottom: 8 }}>Натисни върху поле и избери от падащите предложения. Можеш и да въведеш собствена стойност.</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8, marginBottom: 12 }}>
                       <SuggestInput value={c.productionDate || ''} onChange={e => updateCar(si, ci, 'productionDate', e.target.value)} placeholder="Дата на производство (напр. Май 2018)" aria-label="Дата на производство (напр. Май 2018)" options={TECH_SUGGESTIONS.productionDate} />
                       <SuggestInput value={c.engine || ''} onChange={e => updateCar(si, ci, 'engine', e.target.value)} placeholder="Двигател" aria-label="Двигател" options={TECH_SUGGESTIONS.engine} />
                       <SuggestInput value={c.power || ''} onChange={e => updateCar(si, ci, 'power', e.target.value)} placeholder="Мощност (напр. 265 к.с.)" aria-label="Мощност (напр. 265 к.с.)" options={TECH_SUGGESTIONS.power} />
@@ -1142,33 +1204,36 @@ export default function Home() {
                       <SuggestInput value={c.color || ''} onChange={e => updateCar(si, ci, 'color', e.target.value)} placeholder="Цвят" aria-label="Цвят" options={TECH_SUGGESTIONS.color} />
                     </div>
 
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: '#374151', margin: '10px 0 6px' }}>ДОПЪЛНИТЕЛНА ИНФОРМАЦИЯ</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', color: '#1f2937', margin: '12px 0 6px' }}>ДОПЪЛНИТЕЛНА ИНФОРМАЦИЯ</div>
                     <textarea
                       value={c.additionalInfo || ''}
                       onChange={e => updateCar(si, ci, 'additionalInfo', e.target.value)}
                       placeholder={'Напиши подробно описание, екстри, лизинг, бартер, контакти и друга информация...'}
-                      rows={10}
-                      style={{ width: '100%', padding: '9px 10px', border: '0.5px solid rgba(140,150,160,0.3)', borderRadius: 6, fontSize: 13, background: '#F9FAFA', outline: 'none', resize: 'vertical', lineHeight: 1.5, marginBottom: 8 }}
+                      rows={8}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #cfd4dc', borderRadius: 8, fontSize: 16, background: '#ffffff', outline: 'none', resize: 'vertical', lineHeight: 1.55, marginBottom: 10 }}
                     />
 
                     <CarGalleryUploader value={getCarImages(c)} onChange={images => updateCarImages(si, ci, images)} />
 
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
                       {['4x4', 'leasing', 'new', 'warranty'].map(b => {
                         const bc = getBadgeColors(false);
                         const emoji = b === '4x4' ? '🛞' : b === 'leasing' ? '🤝' : b === 'new' ? '✨' : '🛡';
 
                         return (
                           <button
+                            type="button"
                             key={b}
                             onClick={() => toggleBadge(si, ci, b)}
                             style={{
-                              fontSize: 10,
-                              padding: '3px 9px',
-                              borderRadius: 20,
-                              border: (c.badges || []).includes(b) ? `0.5px solid ${bc[b].color}` : '0.5px solid rgba(140,150,160,0.3)',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              minHeight: 40,
+                              padding: '6px 14px',
+                              borderRadius: 999,
+                              border: (c.badges || []).includes(b) ? `1.5px solid ${bc[b].color}` : '1px solid #cfd4dc',
                               background: (c.badges || []).includes(b) ? bc[b].bg : 'white',
-                              color: (c.badges || []).includes(b) ? bc[b].color : '#5B6470',
+                              color: (c.badges || []).includes(b) ? bc[b].color : '#4b5563',
                               cursor: 'pointer'
                             }}
                           >
@@ -1181,25 +1246,28 @@ export default function Home() {
                   );
                 })}
 
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <button
+                    type="button"
                     onClick={() => addCar(si)}
-                    style={{ flex: 1, padding: 8, border: '0.5px dashed rgba(140,150,160,0.4)', borderRadius: 8, background: 'transparent', color: '#a51c2b', fontSize: 13, cursor: 'pointer' }}
+                    style={{ flex: '1 1 180px', minHeight: 44, padding: '10px 14px', border: '1px dashed rgba(165,28,43,0.5)', borderRadius: 10, background: 'rgba(165,28,43,0.04)', color: '#a51c2b', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
                   >
                     + Нов автомобил
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => openPicker(si)}
-                    style={{ flex: 1, padding: 8, border: '0.5px solid rgba(140,150,160,0.5)', borderRadius: 8, background: '#12151A', color: '#f4f0ec', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    style={{ flex: '1 1 180px', minHeight: 44, padding: '10px 14px', border: '1px solid #14171f', borderRadius: 10, background: '#14171f', color: '#f4f5f7', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
                   >
                     📚 От каталога
                   </button>
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => addSectionAfter(si)}
-                  style={{ width: '100%', marginTop: 8, padding: 7, border: '0.5px dashed rgba(140,150,160,0.4)', borderRadius: 8, background: 'transparent', color: '#a51c2b', fontSize: 12, cursor: 'pointer' }}
+                  style={{ width: '100%', marginTop: 10, minHeight: 44, padding: '9px 14px', border: '1px dashed rgba(140,150,160,0.5)', borderRadius: 10, background: 'transparent', color: '#a51c2b', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
                 >
                   + Нова категория след „{sec.label}“
                 </button>
